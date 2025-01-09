@@ -1,1 +1,1 @@
-from franka_env.envs.pcb_env.franka_pcb_insert import FrankaPCBInsert
+from examples.experiments.async_pcb_insert_drq.wrapper import PCBInsertEnv

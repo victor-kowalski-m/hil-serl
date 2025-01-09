@@ -5,14 +5,14 @@ import copy
 
 from franka_env.envs.franka_env import FrankaEnv
 from franka_env.utils.rotations import euler_2_quat
-from franka_env.envs.cable_env.config import CableEnvConfig
+# from examples.experiments.async_cable_route_drq.config import EnvConfig
 
 ##############################################################################
 
 
-class FrankaCableRoute(FrankaEnv):
+class CableRouteEnv(FrankaEnv):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, config=CableEnvConfig)
+        super().__init__(**kwargs)
 
     def go_to_rest(self, joint_reset=False):
         """

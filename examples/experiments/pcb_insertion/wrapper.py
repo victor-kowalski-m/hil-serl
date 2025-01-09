@@ -6,12 +6,13 @@ import copy
 
 from franka_env.envs.franka_env import FrankaEnv
 from franka_env.utils.rotations import euler_2_quat
-from franka_env.envs.pcb_env.config import PCBEnvConfig
+# from examples.experiments.async_pcb_insert_drq.config import EnvConfig
 
 
-class FrankaPCBInsert(FrankaEnv):
+class PCBInsertEnv(FrankaEnv):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs, config=PCBEnvConfig)
+        super().__init__(**kwargs)
+        # super().__init__(**kwargs, config=EnvConfig)
 
     def crop_image(self, name, image):
         """Crop realsense images to be a square."""

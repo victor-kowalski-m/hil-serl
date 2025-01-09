@@ -1,1 +1,1 @@
-from franka_env.envs.cable_env.franka_cable_route import FrankaCableRoute
+from examples.experiments.async_cable_route_drq.wrapper import CableRouteEnv
