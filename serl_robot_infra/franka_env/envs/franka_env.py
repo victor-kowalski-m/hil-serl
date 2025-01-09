@@ -234,6 +234,7 @@ class FrankaEnv(gym.Env):
         ob = self._get_obs()
         reward = self.compute_reward(ob)
         done = self.curr_path_length >= self.max_episode_length or reward or self.terminate
+        print(action)
         return ob, int(reward), done, False, {"succeed": reward}
 
     def compute_reward(self, obs) -> bool:

@@ -19,33 +19,19 @@ from experiments.usb_pickup_insertion.wrapper import USBEnv, GripperPenaltyWrapp
 
 
 class EnvConfig(DefaultEnvConfig):
-    SERVER_URL: str = "http://127.0.0.2:5000/"
+    SERVER_URL: str = "http://127.0.0.1:5000/"
     REALSENSE_CAMERAS = {
         "wrist_1": {
-            "serial_number": "127122270350",
+            "serial_number": "241122072130",
             "dim": (1280, 720),
             "exposure": 10500,
-        },
-        "wrist_2": {
-            "serial_number": "127122270146",
-            "dim": (1280, 720),
-            "exposure": 10500,
-        },
-        "side_policy": {
-            "serial_number": "130322274175",
-            "dim": (1280, 720),
-            "exposure": 13000,
-        },
-        "side_classifier": {
-            "serial_number": "130322274175",
-            "dim": (1280, 720),
-            "exposure": 13000,
         },
     }
-    IMAGE_CROP = {"wrist_1": lambda img: img[50:-200, 200:-200],
-                  "wrist_2": lambda img: img[:-200, 200:-200],
-                  "side_policy": lambda img: img[250:500, 350:650],
-                  "side_classifier": lambda img: img[270:398, 500:628]}
+    IMAGE_CROP = {"wrist_1": lambda img: img[50:-200, 200:-200]}
+    # IMAGE_CROP = {"wrist_1": lambda img: img[50:-200, 200:-200],
+    #               "wrist_2": lambda img: img[:-200, 200:-200],
+    #               "side_policy": lambda img: img[250:500, 350:650],
+    #               "side_classifier": lambda img: img[270:398, 500:628]}
     TARGET_POSE = np.array([0.553,0.1769683108549487,0.25097833796596336, np.pi, 0, -np.pi/2])
     RESET_POSE = TARGET_POSE + np.array([0, 0.03, 0.05, 0, 0, 0])
     ACTION_SCALE = np.array([0.015, 0.1, 1])
@@ -99,7 +85,7 @@ class EnvConfig(DefaultEnvConfig):
 
 
 class TrainConfig(DefaultTrainingConfig):
-    image_keys = ["side_policy", "wrist_1", "wrist_2"]
+    image_keys = ["wrist_1"]
     classifier_keys = ["side_classifier"]
     proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque", "gripper_pose"]
     checkpoint_period = 2000

@@ -19,34 +19,35 @@ from experiments.config import DefaultTrainingConfig
 from experiments.ram_insertion.wrapper import RAMEnv
 
 class EnvConfig(DefaultEnvConfig):
-    SERVER_URL = "http://127.0.0.2:5000/"
+    SERVER_URL = "http://127.0.0.1:5000/"
     REALSENSE_CAMERAS = {
         "wrist_1": {
-            "serial_number": "127122270146",
+            "serial_number": "241122072130",
             "dim": (1280, 720),
             "exposure": 40000,
         },
-        "wrist_2": {
-            "serial_number": "127122270350",
-            "dim": (1280, 720),
-            "exposure": 40000,
-        },
+        # "wrist_2": {
+        #     "serial_number": "127122270350",
+        #     "dim": (1280, 720),
+        #     "exposure": 40000,
+        # },
     }
     IMAGE_CROP = {
         "wrist_1": lambda img: img[150:450, 350:1100],
-        "wrist_2": lambda img: img[100:500, 400:900],
+        # "wrist_2": lambda img: img[100:500, 400:900],
     }
-    TARGET_POSE = np.array([0.5881241235410154,-0.03578590131997776,0.27843494179085326, np.pi, 0, 0])
-    GRASP_POSE = np.array([0.5857508505445138,-0.22036261105675414,0.2731021902359492, np.pi, 0, 0])
+    # 0.39743095823524216,-0.019835561279208228,0.17075676605264356,-3.1359021282719723,-0.01482443542814571,-0.008049429628510518
+    TARGET_POSE = np.array([0.39743095823524216,-0.019835561279208228,0.17075676605264356, np.pi, 0, 0])
+    GRASP_POSE = np.array([0.39743095823524216,-0.019835561279208228,0.17075676605264356, np.pi, 0, 0])
     RESET_POSE = TARGET_POSE + np.array([0, 0, 0.05, 0, 0.05, 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.02, 0.01, 0.01, 0.1, 0.4])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.02, 0.05, 0.01, 0.1, 0.4])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
     RANDOM_RESET = True
     RANDOM_XY_RANGE = 0.02
     RANDOM_RZ_RANGE = 0.05
-    ACTION_SCALE = (0.01, 0.06, 1)
+    ACTION_SCALE = (1, 1, 1)
     DISPLAY_IMAGE = True
-    MAX_EPISODE_LENGTH = 100
+    MAX_EPISODE_LENGTH = 500
     COMPLIANCE_PARAM = {
         "translational_stiffness": 2000,
         "translational_damping": 89,
