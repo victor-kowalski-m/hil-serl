@@ -421,14 +421,14 @@ class FrankaEnv(gym.Env):
         data = {"arr": arr.tolist()}
         requests.post(self.url + "pose", json=data)
 
-    def _send_gripper_command(self, pos: float, mode="binary"):
+    def _send_gripper_command(self, pos: float, mode="binary", force=False):
         """Internal function to send gripper command to the robot."""
         if mode == "binary":
-            if (pos <= -0.5) and (self.curr_gripper_pos > 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # close gripper
+            if (pos <= -0.5) and (self.curr_gripper_pos > 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep) or force:  # close gripper
                 requests.post(self.url + "close_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            elif (pos >= 0.5) and (self.curr_gripper_pos < 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # open gripper
+            elif (pos >= 0.5) and (self.curr_gripper_pos < 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep) or force:  # open gripper
                 requests.post(self.url + "open_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)

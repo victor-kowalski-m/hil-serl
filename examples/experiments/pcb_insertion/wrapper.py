@@ -23,12 +23,12 @@ class PCBInsertEnv(FrankaEnv):
         else:
             return ValueError(f"Camera {name} not recognized in cropping")
 
-    def go_to_rest(self, joint_reset=False):
+    def go_to_reset(self, joint_reset=False):
         """
         Move to the rest position defined in base class.
         Add a small z offset before going to rest to avoid collision with object.
         """
-        self._send_gripper_command(-1)
+        self._send_gripper_command(-1, force=True)
         self._update_currpos()
         self._send_pos_command(self.currpos)
         time.sleep(0.5)
@@ -44,4 +44,4 @@ class PCBInsertEnv(FrankaEnv):
         time.sleep(0.5)
 
         # execute the go_to_rest method from the parent class
-        super().go_to_rest(joint_reset)
+        super().go_to_reset(joint_reset)
