@@ -34,7 +34,7 @@ class USBEnv(FrankaEnv):
         self._send_pos_command(self.currpos)
         time.sleep(0.1)
         requests.post(self.url + "update_param", json=self.config.PRECISION_PARAM)
-        self._send_gripper_command(1.0)
+        self._send_gripper_command(1.0, force=True)
         
         # Move above the target pose
         target = copy.deepcopy(self.currpos)
@@ -43,7 +43,7 @@ class USBEnv(FrankaEnv):
         time.sleep(0.5)
         self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
         time.sleep(0.5)
-        self._send_gripper_command(-1.0)
+        self._send_gripper_command(-1.0, force=True)
 
         self._update_currpos()
         reset_pose = copy.deepcopy(self.config.TARGET_POSE)
@@ -51,7 +51,7 @@ class USBEnv(FrankaEnv):
         self.interpolate_move(reset_pose, timeout=0.5)
 
         obs, info = super().reset(**kwargs)
-        self._send_gripper_command(1.0)
+        self._send_gripper_command(1.0, force=True)
         time.sleep(1)
         self.success = False
         self._update_currpos()
