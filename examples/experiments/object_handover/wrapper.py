@@ -20,7 +20,7 @@ class HandOffEnv(FrankaEnv):
             ]
         )
 
-    def init_cameras(self, name_serial_dict=None):
+    def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
             self.close_cameras()

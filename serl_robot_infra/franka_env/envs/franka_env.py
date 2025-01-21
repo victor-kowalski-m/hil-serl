@@ -1,6 +1,7 @@
 """Gym Interface for Franka"""
 
 import os
+import re
 import numpy as np
 import gymnasium as gym
 import cv2
@@ -13,6 +14,7 @@ import threading
 from datetime import datetime
 from collections import OrderedDict
 from typing import Dict
+from cv2 import VideoCapture as CVVideoCapture
 
 from franka_env.camera.video_capture import VideoCapture
 from franka_env.camera.rs_capture import RSCapture
@@ -53,8 +55,15 @@ class DefaultEnvConfig:
 
     SERVER_URL: str = "http://127.0.0.1:5000/"
     REALSENSE_CAMERAS: Dict = {
-        "wrist_1": "130322274175",
-        "wrist_2": "127122270572",
+        "wrist_1": {
+            "serial_number": "241122072130",
+            "dim": (1280, 720),
+            "exposure": 40000,
+        },
+    }
+    GENERIC_CAMERAS: Dict = {
+        "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
+        "side": {"id_name": "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     IMAGE_CROP: dict[str, callable] = {}
     TARGET_POSE: np.ndarray = np.zeros((6,))
@@ -156,7 +165,8 @@ class FrankaEnv(gym.Env):
                 "images": gym.spaces.Dict(
                     {
                         key: gym.spaces.Box(0, 255, shape=(128, 128, 3), dtype=np.uint8)
-                        for key in config.REALSENSE_CAMERAS
+                        for key in list(config.REALSENSE_CAMERAS.keys())
+                        + list(config.GENERIC_CAMERAS.keys())
                     }
                 ),
             }
@@ -167,7 +177,8 @@ class FrankaEnv(gym.Env):
             return
 
         self.cap = None
-        self.init_cameras(config.REALSENSE_CAMERAS)
+        self.init_realsense_cameras(config.REALSENSE_CAMERAS)
+        self.init_generic_cameras(config.GENERIC_CAMERAS)
         if self.display_image:
             self.img_queue = queue.Queue()
             self.displayer = ImageDisplayer(self.img_queue, self.url)
@@ -275,7 +286,7 @@ class FrankaEnv(gym.Env):
         full_res_images = {}  # New dictionary to store full resolution cropped images
         for key, cap in self.cap.items():
             try:
-                rgb = cap.read()
+                _, rgb = cap.read()
                 cropped_rgb = (
                     self.config.IMAGE_CROP[key](rgb)
                     if key in self.config.IMAGE_CROP
@@ -295,7 +306,8 @@ class FrankaEnv(gym.Env):
                     f"{key} camera frozen. Check connect, then press enter to relaunch..."
                 )
                 cap.close()
-                self.init_cameras(self.config.REALSENSE_CAMERAS)
+                self.init_realsense_cameras(self.config.REALSENSE_CAMERAS)
+                self.init_generic_cameras(self.config.GENERIC_CAMERAS)
                 return self.get_im()
 
         # Store full resolution cropped images separately
@@ -416,7 +428,7 @@ class FrankaEnv(gym.Env):
         except Exception as e:
             print(f"Failed to save video: {e}")
 
-    def init_cameras(self, name_serial_dict=None):
+    def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
             self.close_cameras()
@@ -424,6 +436,31 @@ class FrankaEnv(gym.Env):
         self.cap = OrderedDict()
         for cam_name, kwargs in name_serial_dict.items():
             cap = VideoCapture(RSCapture(name=cam_name, **kwargs))
+            self.cap[cam_name] = cap
+
+    def init_generic_cameras(self, cam_dict):
+        def get_camera_by_id_name(cam_name):
+            cam_file = "/dev/v4l/by-id/" + cam_name
+            if not os.path.exists(cam_file):
+                raise ValueError(f"Camera {cam_name} does not exist. Try reconnecting")
+
+            device_path = os.path.realpath(cam_file)
+            device_re = re.compile("\/dev\/video(\d+)")
+            info = device_re.match(device_path)
+            if info:
+                device_num = int(info.group(1))
+                return device_num
+            else:
+                raise RuntimeError("/dev/videoX not found. Not sure what to do.")
+
+        for cam_name, val in cam_dict.items():
+            if "id_name" in val:
+                name = get_camera_by_id_name(val["id_name"])
+            else:
+                name = val["name"]
+            cap = CVVideoCapture(name)
+            if not cap.isOpened():
+                raise RuntimeError(f"Could not open camera {name}")
             self.cap[cam_name] = cap
 
     def close_cameras(self):
@@ -450,18 +487,20 @@ class FrankaEnv(gym.Env):
         if mode == "binary":
             if (
                 (pos <= -0.5)
-                and (self.curr_gripper_pos > 0.85)
-                and (time.time() - self.last_gripper_act > self.gripper_sleep)
-                or force
+                and (self.curr_gripper_pos > 0.05)
+                and (
+                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+                )
             ):  # close gripper
                 requests.post(self.url + "close_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
             elif (
                 (pos >= 0.5)
-                and (self.curr_gripper_pos < 0.85)
-                and (time.time() - self.last_gripper_act > self.gripper_sleep)
-                or force
+                and (self.curr_gripper_pos < 0.05)
+                and (
+                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+                )
             ):  # open gripper
                 requests.post(self.url + "open_gripper")
                 self.last_gripper_act = time.time()

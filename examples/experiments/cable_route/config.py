@@ -9,7 +9,6 @@ from franka_env.envs.wrappers import (
     Quat2EulerWrapper,
     SpacemouseIntervention,
     MultiCameraBinaryRewardClassifierWrapper,
-    GripperCloseEnv,
 )
 from franka_env.envs.relative_env import RelativeFrame
 from serl_launcher.wrappers.serl_obs_wrappers import SERLObsWrapper
@@ -31,11 +30,15 @@ class EnvConfig(DefaultEnvConfig):
         },
         # "wrist_2": "127122270572",
     }
+    GENERIC_CAMERAS = {
+        "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
+        "side": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+    }
     TARGET_POSE = np.array(
         [
             0.460639895728905,
             -0.02439473272513422,
-            0.026321125814908725,
+            0.006321125814908725,
             3.1331234,
             0.0182487,
             1.5824805,
@@ -126,7 +129,7 @@ class TrainConfig(DefaultTrainingConfig):
         env = CableRouteEnv(
             fake_env=fake_env, save_video=save_video, config=EnvConfig()
         )
-        env = GripperCloseEnv(env)
+        # env = GripperCloseEnv(env)
         if not fake_env:
             env = SpacemouseIntervention(env)
         env = RelativeFrame(env)
