@@ -1,7 +1,6 @@
 import queue
 import threading
-import time
-import numpy as np
+
 
 class VideoCapture:
     def __init__(self, cap, name=None):

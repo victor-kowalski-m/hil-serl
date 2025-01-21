@@ -6,19 +6,17 @@ import pickle as pkl
 import datetime
 import os
 
-import franka_env
 
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.wrappers import (
     GripperCloseEnv,
     SpacemouseIntervention,
     Quat2EulerWrapper,
-    MultiCameraBinaryRewardClassifierWrapper,
 )
 
 from serl_launcher.wrappers.serl_obs_wrappers import SERLObsWrapper
 from serl_launcher.wrappers.chunking import ChunkingWrapper
-from serl_launcher.networks.reward_classifier import load_classifier_func
+
 # import jax
 
 if __name__ == "__main__":

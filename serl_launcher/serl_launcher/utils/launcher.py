@@ -18,11 +18,11 @@ from serl_launcher.vision.data_augmentations import batched_random_crop
 
 
 def make_bc_agent(
-    seed, 
-    sample_obs, 
-    sample_action, 
-    image_keys=("image",), 
-    encoder_type="resnet-pretrained"
+    seed,
+    sample_obs,
+    sample_action,
+    image_keys=("image",),
+    encoder_type="resnet-pretrained",
 ):
     return BCAgent.create(
         jax.random.PRNGKey(seed),
@@ -197,11 +197,11 @@ def linear_schedule(step):
     end_value = 50.0
     decay_steps = 15_000
 
-
     linear_step = jnp.minimum(step, decay_steps)
     decayed_value = init_value + (end_value - init_value) * (linear_step / decay_steps)
     return decayed_value
-    
+
+
 def make_batch_augmentation_func(image_keys) -> callable:
 
     def data_augmentation_fn(rng, observations):
@@ -214,7 +214,7 @@ def make_batch_augmentation_func(image_keys) -> callable:
                 }
             )
         return observations
-    
+
     def augment_batch(batch: Batch, rng: PRNGKey) -> Batch:
         rng, obs_rng, next_obs_rng = jax.random.split(rng, 3)
         obs = data_augmentation_fn(obs_rng, batch["observations"])
@@ -226,7 +226,7 @@ def make_batch_augmentation_func(image_keys) -> callable:
             }
         )
         return batch
-    
+
     return augment_batch
 
 

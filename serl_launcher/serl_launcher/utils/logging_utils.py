@@ -1,9 +1,6 @@
 import wandb
 from ml_collections import ConfigDict
-from ml_collections.config_flags import config_flags
 from ml_collections.config_dict import config_dict
-import random
-import pprint
 import time
 import uuid
 import tempfile
@@ -11,7 +8,6 @@ import os
 from copy import copy
 from socket import gethostname
 import cloudpickle as pickle
-import time
 from collections import deque
 from typing import Optional
 
@@ -19,15 +15,16 @@ import numpy as np
 
 import gymnasium as gym
 
+
 class WandBLogger(object):
 
     @staticmethod
     def get_default_config(updates=None):
         config = ConfigDict()
         config.online = False
-        config.prefix = 'JaxCQL'
-        config.project = ''
-        config.output_dir = '/tmp/JaxCQL'
+        config.prefix = "JaxCQL"
+        config.project = ""
+        config.output_dir = "/tmp/JaxCQL"
         config.random_delay = 0.0
         config.experiment_id = config_dict.placeholder(str)
         config.anonymous = config_dict.placeholder(str)
@@ -44,19 +41,23 @@ class WandBLogger(object):
         if self.config.experiment_id is None:
             self.config.experiment_id = uuid.uuid4().hex
 
-        if self.config.prefix != '':
-            self.config.project = '{}--{}'.format(self.config.prefix, self.config.project)
+        if self.config.prefix != "":
+            self.config.project = "{}--{}".format(
+                self.config.prefix, self.config.project
+            )
 
-        if self.config.output_dir == '':
+        if self.config.output_dir == "":
             self.config.output_dir = tempfile.mkdtemp()
         else:
-            self.config.output_dir = os.path.join(self.config.output_dir, self.config.experiment_id)
+            self.config.output_dir = os.path.join(
+                self.config.output_dir, self.config.experiment_id
+            )
             os.makedirs(self.config.output_dir, exist_ok=True)
 
         self._variant = copy(variant)
 
-        if 'hostname' not in self._variant:
-            self._variant['hostname'] = gethostname()
+        if "hostname" not in self._variant:
+            self._variant["hostname"] = gethostname()
 
         if self.config.random_delay > 0:
             time.sleep(np.random.uniform(0, self.config.random_delay))
@@ -74,14 +75,14 @@ class WandBLogger(object):
                 start_method="thread",
                 _disable_stats=True,
             ),
-            mode='online' if self.config.online else 'offline',
+            mode="online" if self.config.online else "offline",
         )
 
     def log(self, *args, **kwargs):
         self.run.log(*args, **kwargs)
 
     def save_pickle(self, obj, filename):
-        with open(os.path.join(self.config.output_dir, filename), 'wb') as fout:
+        with open(os.path.join(self.config.output_dir, filename), "wb") as fout:
             pickle.dump(obj, fout)
 
     @property
@@ -97,9 +98,9 @@ class WandBLogger(object):
         return self.config.output_dir
 
 
-
-
 """Wrapper that tracks the cumulative rewards and episode lengths."""
+
+
 class RecordEpisodeStatistics(gym.Wrapper, gym.utils.RecordConstructorArgs):
     """This wrapper will keep track of cumulative rewards and episode lengths.
 

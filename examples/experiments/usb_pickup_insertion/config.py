@@ -32,7 +32,9 @@ class EnvConfig(DefaultEnvConfig):
     #               "wrist_2": lambda img: img[:-200, 200:-200],
     #               "side_policy": lambda img: img[250:500, 350:650],
     #               "side_classifier": lambda img: img[270:398, 500:628]}
-    TARGET_POSE = np.array([0.553,0.1769683108549487,0.25097833796596336, np.pi, 0, -np.pi/2])
+    TARGET_POSE = np.array(
+        [0.553, 0.1769683108549487, 0.25097833796596336, np.pi, 0, -np.pi / 2]
+    )
     RESET_POSE = TARGET_POSE + np.array([0, 0.03, 0.05, 0, 0, 0])
     ACTION_SCALE = np.array([0.015, 0.1, 1])
     RANDOM_RESET = True
@@ -97,9 +99,7 @@ class TrainConfig(DefaultTrainingConfig):
     setup_mode = "single-arm-learned-gripper"
 
     def get_environment(self, fake_env=False, save_video=False, classifier=False):
-        env = USBEnv(
-            fake_env=fake_env, save_video=save_video, config=EnvConfig()
-        )
+        env = USBEnv(fake_env=fake_env, save_video=save_video, config=EnvConfig())
         if not fake_env:
             env = SpacemouseIntervention(env)
         env = RelativeFrame(env)

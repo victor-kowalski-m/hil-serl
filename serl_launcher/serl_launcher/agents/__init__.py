@@ -1,7 +1,11 @@
-from .continuous.bc import BCAgent
-from .continuous.sac import SACAgent
-from .continuous.sac_hybrid_single import SACAgentHybridSingleArm
-from .continuous.sac_hybrid_dual import SACAgentHybridDualArm
+from serl_launcher.serl_launcher.agents.continuous.bc import BCAgent
+from serl_launcher.serl_launcher.agents.continuous.sac import SACAgent
+from serl_launcher.serl_launcher.agents.continuous.sac_hybrid_single import (
+    SACAgentHybridSingleArm,
+)
+from serl_launcher.serl_launcher.agents.continuous.sac_hybrid_dual import (
+    SACAgentHybridDualArm,
+)
 
 agents = {
     "bc": BCAgent,

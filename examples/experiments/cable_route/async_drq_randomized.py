@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import time
-from functools import partial
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -38,7 +37,6 @@ from franka_env.envs.wrappers import (
     BinaryRewardClassifierWrapper,
 )
 
-import franka_env
 
 FLAGS = flags.FLAGS
 

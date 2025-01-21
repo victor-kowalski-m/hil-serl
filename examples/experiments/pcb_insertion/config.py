@@ -1,25 +1,22 @@
 import numpy as np
-import numpy as np
 from franka_env.envs.franka_env import DefaultEnvConfig
 from experiments.config import DefaultTrainingConfig
 import os
 import jax
-import numpy as np
 import jax.numpy as jnp
-from franka_env.envs.franka_env import DefaultEnvConfig
-from experiments.config import DefaultTrainingConfig
 from experiments.pcb_insertion.wrapper import PCBInsertEnv
 from franka_env.envs.wrappers import (
     Quat2EulerWrapper,
     SpacemouseIntervention,
     MultiCameraBinaryRewardClassifierWrapper,
-    GripperCloseEnv
+    GripperCloseEnv,
 )
 from franka_env.envs.relative_env import RelativeFrame
-from franka_env.envs.franka_env import DefaultEnvConfig
 from serl_launcher.wrappers.serl_obs_wrappers import SERLObsWrapper
 from serl_launcher.wrappers.chunking import ChunkingWrapper
 from serl_launcher.networks.reward_classifier import load_classifier_func
+
+
 class EnvConfig(DefaultEnvConfig):
     """Set the configuration for FrankaEnv."""
 
@@ -103,6 +100,8 @@ class EnvConfig(DefaultEnvConfig):
         "rotational_clip_neg_z": 0.05,
         "rotational_Ki": 0.1,
     }
+
+
 class TrainConfig(DefaultTrainingConfig):
     image_keys = ["wrist_1"]
     classifier_keys = ["side_classifier"]
@@ -116,9 +115,7 @@ class TrainConfig(DefaultTrainingConfig):
     setup_mode = "single-arm-learned-gripper"
 
     def get_environment(self, fake_env=False, save_video=False, classifier=False):
-        env = PCBInsertEnv(
-            fake_env=fake_env, save_video=save_video, config=EnvConfig()
-        )
+        env = PCBInsertEnv(fake_env=fake_env, save_video=save_video, config=EnvConfig())
         env = GripperCloseEnv(env)
         if not fake_env:
             env = SpacemouseIntervention(env)

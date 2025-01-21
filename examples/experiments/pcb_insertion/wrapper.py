@@ -1,11 +1,9 @@
-import numpy as np
-import gym
 import time
 import requests
 import copy
 
 from franka_env.envs.franka_env import FrankaEnv
-from franka_env.utils.rotations import euler_2_quat
+
 # from examples.experiments.async_pcb_insert_drq.config import EnvConfig
 
 

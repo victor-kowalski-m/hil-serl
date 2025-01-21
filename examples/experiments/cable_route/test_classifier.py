@@ -1,7 +1,6 @@
 import gym
 from tqdm import tqdm
 import numpy as np
-import franka_env
 
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.wrappers import (

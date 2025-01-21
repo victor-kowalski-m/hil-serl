@@ -6,7 +6,6 @@ import pickle as pkl
 import datetime
 import os
 
-import franka_env
 
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.wrappers import (

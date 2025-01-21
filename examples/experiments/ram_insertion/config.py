@@ -7,7 +7,7 @@ from franka_env.envs.wrappers import (
     Quat2EulerWrapper,
     SpacemouseIntervention,
     MultiCameraBinaryRewardClassifierWrapper,
-    GripperCloseEnv
+    GripperCloseEnv,
 )
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.franka_env import DefaultEnvConfig
@@ -17,6 +17,7 @@ from serl_launcher.networks.reward_classifier import load_classifier_func
 
 from experiments.config import DefaultTrainingConfig
 from experiments.ram_insertion.wrapper import RAMEnv
+
 
 class EnvConfig(DefaultEnvConfig):
     SERVER_URL = "http://127.0.0.1:5000/"
@@ -37,8 +38,12 @@ class EnvConfig(DefaultEnvConfig):
         # "wrist_2": lambda img: img[100:500, 400:900],
     }
     # 0.39743095823524216,-0.019835561279208228,0.17075676605264356,-3.1359021282719723,-0.01482443542814571,-0.008049429628510518
-    TARGET_POSE = np.array([0.39743095823524216,-0.019835561279208228,0.17075676605264356, np.pi, 0, 0])
-    GRASP_POSE = np.array([0.39743095823524216,-0.019835561279208228,0.17075676605264356, np.pi, 0, 0])
+    TARGET_POSE = np.array(
+        [0.39743095823524216, -0.019835561279208228, 0.17075676605264356, np.pi, 0, 0]
+    )
+    GRASP_POSE = np.array(
+        [0.39743095823524216, -0.019835561279208228, 0.17075676605264356, np.pi, 0, 0]
+    )
     RESET_POSE = TARGET_POSE + np.array([0, 0, 0.05, 0, 0.05, 0])
     ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
     ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
@@ -124,7 +129,9 @@ class TrainConfig(DefaultTrainingConfig):
             def reward_func(obs):
                 sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
                 # added check for z position to further robustify classifier, but should work without as well
-                return int(sigmoid(classifier(obs)) > 0.85 and obs['state'][0, 6] > 0.04)
+                return int(
+                    sigmoid(classifier(obs)) > 0.85 and obs["state"][0, 6] > 0.04
+                )
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
         return env

@@ -1,4 +1,3 @@
-import pickle as pkl
 import jax
 from jax import numpy as jnp
 import flax
@@ -21,7 +20,6 @@ from serl_launcher.data.data_store import (
 )
 from serl_launcher.networks.reward_classifier import create_classifier
 
-import franka_env
 from franka_env.envs.wrappers import (
     GripperCloseEnv,
     Quat2EulerWrapper,

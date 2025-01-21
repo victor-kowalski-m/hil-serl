@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 import time
-from functools import partial
 import jax
 import jax.numpy as jnp
 import numpy as np
 import pynput
-import os
 import tqdm
 from absl import app, flags
 from flax.training import checkpoints
@@ -16,7 +14,6 @@ import gym
 from gym.wrappers.record_episode_statistics import RecordEpisodeStatistics
 
 from serl_launcher.agents.continuous.drq import DrQAgent
-from serl_launcher.common.evaluation import evaluate
 from serl_launcher.utils.timer_utils import Timer
 from serl_launcher.wrappers.chunking import ChunkingWrapper
 from serl_launcher.utils.train_utils import concat_batches
@@ -37,8 +34,6 @@ from franka_env.envs.wrappers import (
     SpacemouseIntervention,
     Quat2EulerWrapper,
 )
-
-import franka_env
 
 
 FLAGS = flags.FLAGS

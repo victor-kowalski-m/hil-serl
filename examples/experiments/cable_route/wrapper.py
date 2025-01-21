@@ -1,10 +1,8 @@
-import numpy as np
 import time
-import requests
 import copy
 
 from franka_env.envs.franka_env import FrankaEnv
-from franka_env.utils.rotations import euler_2_quat
+
 # from examples.experiments.async_cable_route_drq.config import EnvConfig
 
 ##############################################################################

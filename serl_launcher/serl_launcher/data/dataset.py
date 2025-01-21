@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Dict, Iterable, Optional, Tuple, Union
 
 import jax

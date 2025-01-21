@@ -248,7 +248,7 @@ class SACAgent(flax.struct.PyTreeNode):
             grad_params=params,
         )
         return temperature_loss, {"temperature_loss": temperature_loss}
-    
+
     def loss_fns(self, batch):
         return {
             "critic": partial(self.critic_loss_fn, batch),
@@ -265,7 +265,7 @@ class SACAgent(flax.struct.PyTreeNode):
         networks_to_update: FrozenSet[str] = frozenset(
             {"actor", "critic", "temperature"}
         ),
-        **kwargs
+        **kwargs,
     ) -> Tuple["SACAgent", dict]:
         """
         Take one gradient step on all (or a subset) of the networks in the agent.
@@ -286,7 +286,10 @@ class SACAgent(flax.struct.PyTreeNode):
         if self.config["image_keys"][0] not in batch["next_observations"]:
             batch = _unpack(batch)
         rng, aug_rng = jax.random.split(self.state.rng)
-        if "augmentation_function" in self.config.keys() and self.config["augmentation_function"] is not None:
+        if (
+            "augmentation_function" in self.config.keys()
+            and self.config["augmentation_function"] is not None
+        ):
             batch = self.config["augmentation_function"](batch, aug_rng)
 
         batch = batch.copy(
@@ -550,6 +553,7 @@ class SACAgent(flax.struct.PyTreeNode):
 
         if "pretrained" in encoder_type:  # load pretrained weights for ResNet-10
             from serl_launcher.utils.train_utils import load_resnet10_params
+
             agent = load_resnet10_params(agent, image_keys)
 
         return agent
