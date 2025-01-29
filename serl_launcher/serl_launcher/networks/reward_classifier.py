@@ -79,7 +79,7 @@ def create_classifier(
     classifier = TrainState.create(
         apply_fn=classifier_def.apply,
         params=params,
-        tx=optax.adam(learning_rate=1e-4),
+        tx=optax.adam(learning_rate=3e-4),
     )
 
     file_name = "resnet10_params.pkl"

@@ -1,9 +1,9 @@
-from serl_launcher.serl_launcher.agents.continuous.bc import BCAgent
-from serl_launcher.serl_launcher.agents.continuous.sac import SACAgent
-from serl_launcher.serl_launcher.agents.continuous.sac_hybrid_single import (
+from serl_launcher.agents.continuous.bc import BCAgent
+from serl_launcher.agents.continuous.sac import SACAgent
+from serl_launcher.agents.continuous.sac_hybrid_single import (
     SACAgentHybridSingleArm,
 )
-from serl_launcher.serl_launcher.agents.continuous.sac_hybrid_dual import (
+from serl_launcher.agents.continuous.sac_hybrid_dual import (
     SACAgentHybridDualArm,
 )
 

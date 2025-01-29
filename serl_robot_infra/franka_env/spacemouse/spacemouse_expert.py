@@ -71,3 +71,6 @@ class SpaceMouseExpert:
     def close(self):
         # pyspacemouse.close()
         self.process.terminate()
+
+    def __del__(self):
+        self.process.terminate()

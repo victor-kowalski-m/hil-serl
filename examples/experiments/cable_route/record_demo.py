@@ -12,12 +12,13 @@ from franka_env.envs.wrappers import (
     GripperCloseEnv,
     SpacemouseIntervention,
     Quat2EulerWrapper,
+    MultiCameraBinaryRewardClassifierWrapper,
 )
-
+from serl_launcher.networks.reward_classifier import load_classifier_func
 from serl_launcher.wrappers.serl_obs_wrappers import SERLObsWrapper
 from serl_launcher.wrappers.chunking import ChunkingWrapper
 
-# import jax
+import jax
 
 if __name__ == "__main__":
     env = gym.make("FrankaCableRoute-Vision-v0", save_video=False)
@@ -29,15 +30,15 @@ if __name__ == "__main__":
     env = ChunkingWrapper(env, obs_horizon=1, act_exec_horizon=None)
     image_keys = [k for k in env.observation_space.keys() if "state" not in k]
 
-    # rng = jax.random.PRNGKey(0)
-    # rng, key = jax.random.split(rng)
-    # classifier_func = load_classifier_func(
-    #     key=key,
-    #     sample=env.observation_space.sample(),
-    #     image_keys=image_keys,
-    #     checkpoint_path="/home/undergrad/code/serl_dev/examples/async_cable_route_drq/classifier_ckpt/",
-    # )
-    # env = MultiCameraBinaryRewardClassifierWrapper(env, classifier_func)
+    rng = jax.random.PRNGKey(0)
+    rng, key = jax.random.split(rng)
+    classifier_func = load_classifier_func(
+        key=key,
+        sample=env.observation_space.sample(),
+        image_keys=image_keys,
+        checkpoint_path="/home/undergrad/code/serl_dev/examples/async_cable_route_drq/classifier_ckpt/",
+    )
+    env = MultiCameraBinaryRewardClassifierWrapper(env, classifier_func)
 
     obs, _ = env.reset()
 

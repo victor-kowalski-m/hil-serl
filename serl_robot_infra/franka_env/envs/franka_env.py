@@ -428,6 +428,14 @@ class FrankaEnv(gym.Env):
         except Exception as e:
             print(f"Failed to save video: {e}")
 
+    def save_image(self, cam, cam_name):
+        ret, frame = cam.read()
+        img_name = cam_name + ".png"
+        if not ret:
+            print("failed to grab frame")
+            exit(1)
+        cv2.imwrite(img_name, frame)
+
     def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
