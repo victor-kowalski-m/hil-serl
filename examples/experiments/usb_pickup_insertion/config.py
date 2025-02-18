@@ -27,22 +27,33 @@ class EnvConfig(DefaultEnvConfig):
             "exposure": 10500,
         },
     }
-    IMAGE_CROP = {"wrist_1": lambda img: img[50:-200, 200:-200]}
+    IMAGE_CROP = {
+        "wrist_1": lambda img: img[:600, 250:1100],
+        "wrist_2": lambda img: img[:, :],
+        # "side": lambda img: img[400:480, 585:665]
+        "side": lambda img: img[150:315, 190:355]
+        }
     # IMAGE_CROP = {"wrist_1": lambda img: img[50:-200, 200:-200],
     #               "wrist_2": lambda img: img[:-200, 200:-200],
     #               "side_policy": lambda img: img[250:500, 350:650],
     #               "side_classifier": lambda img: img[270:398, 500:628]}
+    GENERIC_CAMERAS = {
+        #"side": {"id_name": "usb-Microsoft_Azure_Kinect_4K_Camera_000471215012-video-index0"},
+        "side": {"id_name": "usb-USB2.0_Camera_USB2.0_Camera-video-index0"},
+        "wrist_2": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+    }
     TARGET_POSE = np.array(
-        [0.553, 0.1769683108549487, 0.25097833796596336, np.pi, 0, -np.pi / 2]
+        # [0.4, 0, 0.1, np.pi, 0, 0*np.pi / 2]
+        [0.4886501975714891,0.19186375230282082,0.05945196313308687,np.pi, 0, 0.0]
     )
-    RESET_POSE = TARGET_POSE + np.array([0, 0.03, 0.05, 0, 0, 0])
-    ACTION_SCALE = np.array([0.015, 0.1, 1])
+    RESET_POSE = TARGET_POSE + np.array([0.1, -0.05, 0.1, 0, 0, 0])
+    ACTION_SCALE = np.array([0.1, 0.2, 1])
     RANDOM_RESET = True
     DISPLAY_IMAGE = True
-    RANDOM_XY_RANGE = 0.01
-    RANDOM_RZ_RANGE = 0.1
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.06, 0.05, 0.1, 0.1, 0.3])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.01, 0.03, 0.1, 0.1, 0.3])
+    RANDOM_XY_RANGE = 0.02
+    RANDOM_RZ_RANGE = 0.3
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.2, 0.2, 0.2, np.pi/4, np.pi/4, np.pi])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.2, 0.2, 0.2, np.pi/4, np.pi/4, np.pi])
     COMPLIANCE_PARAM = {
         "translational_stiffness": 2000,
         "translational_damping": 89,
@@ -51,16 +62,16 @@ class EnvConfig(DefaultEnvConfig):
         "translational_Ki": 0,
         "translational_clip_x": 0.006,
         "translational_clip_y": 0.0059,
-        "translational_clip_z": 0.0035,
+        "translational_clip_z": 0.0035, # change here to press down
         "translational_clip_neg_x": 0.005,
         "translational_clip_neg_y": 0.005,
         "translational_clip_neg_z": 0.0035,
         "rotational_clip_x": 0.02,
         "rotational_clip_y": 0.02,
-        "rotational_clip_z": 0.015,
+        "rotational_clip_z": 0.05,
         "rotational_clip_neg_x": 0.02,
         "rotational_clip_neg_y": 0.02,
-        "rotational_clip_neg_z": 0.015,
+        "rotational_clip_neg_z": 0.05,
         "rotational_Ki": 0,
     }
     PRECISION_PARAM = {
@@ -77,18 +88,18 @@ class EnvConfig(DefaultEnvConfig):
         "translational_clip_neg_z": 0.01,
         "rotational_clip_x": 0.03,
         "rotational_clip_y": 0.03,
-        "rotational_clip_z": 0.03,
+        "rotational_clip_z": 0.1,
         "rotational_clip_neg_x": 0.03,
         "rotational_clip_neg_y": 0.03,
-        "rotational_clip_neg_z": 0.03,
+        "rotational_clip_neg_z": 0.1,
         "rotational_Ki": 0.0,
     }
-    MAX_EPISODE_LENGTH = 120
+    MAX_EPISODE_LENGTH = 200
 
 
 class TrainConfig(DefaultTrainingConfig):
-    image_keys = ["wrist_1"]
-    classifier_keys = ["side_classifier"]
+    image_keys = ["wrist_1", "wrist_2", "side"]
+    classifier_keys = ["wrist_1", "wrist_2","side"]
     proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque", "gripper_pose"]
     checkpoint_period = 2000
     cta_ratio = 2
@@ -116,7 +127,10 @@ class TrainConfig(DefaultTrainingConfig):
 
             def reward_func(obs):
                 sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
-                return int(sigmoid(classifier(obs)) > 0.7 and obs["state"][0, 0] > 0.4)
+                prediction = sigmoid(classifier(obs))
+                print("Predict: ", prediction)
+                # return int((prediction > 0.7 and obs["state"][0, 0] > 0.4).item())
+                return int((prediction > 0.7).item())
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
         env = GripperPenaltyWrapper(env, penalty=-0.02)

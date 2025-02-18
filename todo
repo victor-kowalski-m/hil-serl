@@ -1,0 +1,15 @@
+adjust housing cad to be thicker
+print stronger housing
+huge initial cost when using all the classifier data
+train classifier in my pc (with GPU)
+
+classifier seems to be working fine -> showed demos succesfully
+robot does not obey intervention: cant rotate much or approach insertion housing: config?
+try training pick and insert separetely
+
+
+record target pose (and find out what it is used for) OK
+adjust exploration space OK
+adjust side cam crop OK
+correct gripper opening OK
+speed up rotation OK?

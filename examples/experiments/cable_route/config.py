@@ -43,12 +43,12 @@ class EnvConfig(DefaultEnvConfig):
         "front": lambda img: img[162:431, 92:580],
     }
     GENERIC_CAMERAS = {
-        "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
-        "front_classifier": {
-            "id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"
-        },
-        "side": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
-        "side_classifier": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+        # "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
+        # "front_classifier": {
+        #     "id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"
+        # },
+        # "side": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+        # "side_classifier": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     TARGET_POSE = np.array(
         [

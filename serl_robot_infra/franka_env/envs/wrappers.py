@@ -45,7 +45,7 @@ class MultiCameraBinaryRewardClassifierWrapper(gym.Wrapper):
 
     def compute_reward(self, obs, **kwargs):
         if self.reward_classifier_func is not None:
-            return self.reward_classifier_func(obs, **kwargs)
+            return self.reward_classifier_func(obs) #, **kwargs)
         return 0
 
     def step(self, action):

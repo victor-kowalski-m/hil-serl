@@ -36,18 +36,18 @@ class USBEnv(FrankaEnv):
         self._send_gripper_command(1.0, force=True)
 
         # Move above the target pose
-        target = copy.deepcopy(self.currpos)
-        target[2] = self.config.TARGET_POSE[2] + 0.05
-        self.interpolate_move(target, timeout=0.5)
-        time.sleep(0.5)
-        self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
-        time.sleep(0.5)
-        self._send_gripper_command(-1.0, force=True)
+        target = copy.deepcopy(self.config.TARGET_POSE)
+        target[2] = self.config.TARGET_POSE[2] + 0.1
+        self.interpolate_move(target, timeout=1)
+        time.sleep(1)
+        # self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
+        # time.sleep(0.5)
+        # self._send_gripper_command(-1.0, force=True)
 
-        self._update_currpos()
-        reset_pose = copy.deepcopy(self.config.TARGET_POSE)
-        reset_pose[1] += 0.04
-        self.interpolate_move(reset_pose, timeout=0.5)
+        # self._update_currpos()
+        # reset_pose = copy.deepcopy(self.config.TARGET_POSE)
+        # reset_pose[1] += 0.04
+        # self.interpolate_move(reset_pose, timeout=0.5)
 
         obs, info = super().reset(**kwargs)
         self._send_gripper_command(1.0, force=True)
@@ -89,10 +89,10 @@ class USBEnv(FrankaEnv):
                 -self.random_rz_range, self.random_rz_range
             )
             reset_pose[3:] = euler_2_quat(euler_random)
-            self.interpolate_move(reset_pose, timeout=1)
+            self.interpolate_move(reset_pose, timeout=2)
         else:
             reset_pose = self.resetpos.copy()
-            self.interpolate_move(reset_pose, timeout=1)
+            self.interpolate_move(reset_pose, timeout=2)
 
         # Change to compliance mode
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)

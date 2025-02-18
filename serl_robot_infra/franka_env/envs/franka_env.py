@@ -29,10 +29,13 @@ class ImageDisplayer(threading.Thread):
         self.name = name
 
     def run(self):
+        print("RUUUUUUUUUN")
+
         while True:
             img_array = self.queue.get()  # retrieve an image from the queue
             if img_array is None:  # None is our signal to exit
                 break
+            
 
             frame = np.concatenate(
                 [
@@ -43,7 +46,7 @@ class ImageDisplayer(threading.Thread):
                 axis=1,
             )
 
-            cv2.imshow(self.name, frame)
+            cv2.imshow(self.name, frame) # img_array["side_full"])
             cv2.waitKey(1)
 
 
@@ -62,8 +65,8 @@ class DefaultEnvConfig:
         },
     }
     GENERIC_CAMERAS: Dict = {
-        "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
-        "side": {"id_name": "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920-video-index0"},
+        # "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
+        # "side": {"id_name": "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     IMAGE_CROP: dict[str, callable] = {}
     TARGET_POSE: np.ndarray = np.zeros((6,))
@@ -462,10 +465,12 @@ class FrankaEnv(gym.Env):
                 raise RuntimeError("/dev/videoX not found. Not sure what to do.")
 
         for cam_name, val in cam_dict.items():
+            print(cam_name, val)
             if "id_name" in val:
                 name = get_camera_by_id_name(val["id_name"])
             else:
                 name = val["name"]
+            print(f"NAME::::: {name}")
             cap = CVVideoCapture(name)
             if not cap.isOpened():
                 raise RuntimeError(f"Could not open camera {name}")
@@ -505,7 +510,7 @@ class FrankaEnv(gym.Env):
                 time.sleep(self.gripper_sleep)
             elif (
                 (pos >= 0.5)
-                and (self.curr_gripper_pos < 0.05)
+                and (self.curr_gripper_pos < 0.45)
                 and (
                     (time.time() - self.last_gripper_act > self.gripper_sleep) or force
                 )

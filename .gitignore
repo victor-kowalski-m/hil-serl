@@ -1,3 +1,5 @@
+*.pkl
+
 wandb/
 examples/**/classifier_data/
 examples/**/classifier_ckpt/

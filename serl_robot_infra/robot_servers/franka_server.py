@@ -352,6 +352,7 @@ def main(_):
     # Route for Sending a pose command
     @webapp.route("/pose", methods=["POST"])
     def pose():
+        print(request.json)
         pos = np.array(request.json["arr"])
         # print("Moving to", pos)
         robot_server.move(pos)

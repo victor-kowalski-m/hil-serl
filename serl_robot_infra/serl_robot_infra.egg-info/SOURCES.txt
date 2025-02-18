@@ -1,6 +1,8 @@
 README.md
 setup.py
+franka_env/__init__.py
 franka_env/camera/__init__.py
+franka_env/camera/multi_video_capture.py
 franka_env/camera/rs_capture.py
 franka_env/camera/video_capture.py
 franka_env/envs/__init__.py
@@ -9,6 +11,8 @@ franka_env/envs/franka_env.py
 franka_env/envs/franka_wrench_env.py
 franka_env/envs/relative_env.py
 franka_env/envs/wrappers.py
+franka_env/envs/cable_env/__init__.py
+franka_env/envs/pcb_env/__init__.py
 franka_env/spacemouse/__init__.py
 franka_env/spacemouse/pyspacemouse.py
 franka_env/spacemouse/spacemouse_expert.py
