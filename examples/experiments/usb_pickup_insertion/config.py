@@ -16,7 +16,7 @@ from serl_launcher.networks.reward_classifier import load_classifier_func
 
 from experiments.config import DefaultTrainingConfig
 from experiments.usb_pickup_insertion.wrapper import USBEnv, GripperPenaltyWrapper
-
+import cv2
 
 class EnvConfig(DefaultEnvConfig):
     SERVER_URL: str = "http://127.0.0.1:5000/"
@@ -44,18 +44,20 @@ class EnvConfig(DefaultEnvConfig):
     }
     TARGET_POSE = np.array(
         # [0.4, 0, 0.1, np.pi, 0, 0*np.pi / 2]
-        [0.4886501975714891,0.19186375230282082,0.05945196313308687,np.pi, 0, 0.0]
+        # [0.4886501975714891,0.19186375230282082,0.05945196313308687,np.pi, 0, 0.0]
+        [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, 0] # -0.013170756750798152,-0.08242168809978301]
     )
-    RESET_POSE = TARGET_POSE + np.array([0.1, -0.05, 0.1, 0, 0, 0])
-    ACTION_SCALE = np.array([0.1, 0.2, 1])
+    # RESET_POSE = TARGET_POSE + np.array([0.1, -0.05, 0.1, 0, 0, 0])
+    RESET_POSE = TARGET_POSE + np.array([-0.05, 0.03, 0.05, 0, 0, 0])
+    ACTION_SCALE = np.array([0.1, 0.2, 0]) # pos, rot, gripper
     RANDOM_RESET = True
     DISPLAY_IMAGE = True
     RANDOM_XY_RANGE = 0.02
-    RANDOM_RZ_RANGE = 0.3
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.2, 0.2, 0.2, np.pi/4, np.pi/4, np.pi])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.2, 0.2, 0.2, np.pi/4, np.pi/4, np.pi])
+    RANDOM_RZ_RANGE = 0.2
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0, 0.1, 0.2, np.pi/6, np.pi/6, np.pi/6])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.2, 0.0, 0.05, np.pi/6, np.pi/6, np.pi/6])
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 2000,
+        "translational_stiffness": 1500,
         "translational_damping": 89,
         "rotational_stiffness": 150,
         "rotational_damping": 7,
@@ -94,20 +96,20 @@ class EnvConfig(DefaultEnvConfig):
         "rotational_clip_neg_z": 0.1,
         "rotational_Ki": 0.0,
     }
-    MAX_EPISODE_LENGTH = 200
+    MAX_EPISODE_LENGTH = 150
 
 
 class TrainConfig(DefaultTrainingConfig):
-    image_keys = ["wrist_1", "wrist_2", "side"]
+    image_keys = ["wrist_1", "wrist_2"] # , "side"]
     classifier_keys = ["wrist_1", "wrist_2","side"]
-    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque", "gripper_pose"]
+    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque"] #, "gripper_pose"]
     checkpoint_period = 2000
     cta_ratio = 2
     random_steps = 0
     discount = 0.98
     buffer_period = 1000
     encoder_type = "resnet-pretrained"
-    setup_mode = "single-arm-learned-gripper"
+    setup_mode = "single-arm-fixed-gripper"
 
     def get_environment(self, fake_env=False, save_video=False, classifier=False):
         env = USBEnv(fake_env=fake_env, save_video=save_video, config=EnvConfig())
@@ -130,8 +132,11 @@ class TrainConfig(DefaultTrainingConfig):
                 prediction = sigmoid(classifier(obs))
                 print("Predict: ", prediction)
                 # return int((prediction > 0.7 and obs["state"][0, 0] > 0.4).item())
-                return int((prediction > 0.7).item())
+                success = int((prediction > 0.7).item())
+                # if success:
+                #     input("Success")
+                return success
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
-        env = GripperPenaltyWrapper(env, penalty=-0.02)
+        # env = GripperPenaltyWrapper(env, penalty=-0.02)
         return env

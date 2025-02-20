@@ -36,25 +36,25 @@ class USBEnv(FrankaEnv):
         self._send_gripper_command(1.0, force=True)
 
         # Move above the target pose
-        target = copy.deepcopy(self.config.TARGET_POSE)
-        target[2] = self.config.TARGET_POSE[2] + 0.1
+        target = copy.deepcopy(self.currpos)
+        target[2] = self.config.TARGET_POSE[2] + 0.05
         self.interpolate_move(target, timeout=1)
         time.sleep(1)
-        # self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
-        # time.sleep(0.5)
-        # self._send_gripper_command(-1.0, force=True)
-
-        # self._update_currpos()
-        # reset_pose = copy.deepcopy(self.config.TARGET_POSE)
-        # reset_pose[1] += 0.04
-        # self.interpolate_move(reset_pose, timeout=0.5)
+        self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
+        time.sleep(0.5)
+        self._send_gripper_command(-1.0, force=True)
+        self._update_currpos()
+        time.sleep(0.5)
+        reset_pose = copy.deepcopy(self.config.TARGET_POSE)
+        reset_pose[2] += 0.05
+        self.interpolate_move(reset_pose, timeout=0.5)
 
         obs, info = super().reset(**kwargs)
-        self._send_gripper_command(1.0, force=True)
         time.sleep(1)
         self.success = False
         self._update_currpos()
-        obs = self._get_obs()
+        for i in range(10):
+            obs = self._get_obs()
         return obs, info
 
     def interpolate_move(self, goal: np.ndarray, timeout: float):
