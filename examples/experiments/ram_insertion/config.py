@@ -25,80 +25,81 @@ class EnvConfig(DefaultEnvConfig):
         "wrist_1": {
             "serial_number": "241122072130",
             "dim": (1280, 720),
-            "exposure": 40000,
+            "exposure": 10500,
         },
-        # "wrist_2": {
-        #     "serial_number": "127122270350",
-        #     "dim": (1280, 720),
-        #     "exposure": 40000,
-        # },
     }
     IMAGE_CROP = {
-        "wrist_1": lambda img: img[150:450, 350:1100],
-        # "wrist_2": lambda img: img[100:500, 400:900],
+        "wrist_1": lambda img: img[:, 315:1035],
+        "wrist_2": lambda img: img[:, 80:-80],
+        # "side": lambda img: img[400:480, 585:665]
+        "side": lambda img: img[150:315, 190:355]
     }
-    # 0.39743095823524216,-0.019835561279208228,0.17075676605264356,-3.1359021282719723,-0.01482443542814571,-0.008049429628510518
+    GENERIC_CAMERAS = {
+        #"side": {"id_name": "usb-Microsoft_Azure_Kinect_4K_Camera_000471215012-video-index0"},
+        "side": {"id_name": "usb-USB2.0_Camera_USB2.0_Camera-video-index0"},
+        "wrist_2": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+    }
     TARGET_POSE = np.array(
-        [0.39743095823524216, -0.019835561279208228, 0.17075676605264356, np.pi, 0, 0]
+        [0.4881879113354628,0.2208223800177667,0.05731334740852401, np.pi, 0, np.pi/2]
     )
     GRASP_POSE = np.array(
-        [0.39743095823524216, -0.019835561279208228, 0.17075676605264356, np.pi, 0, 0]
+        [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, np.pi/2]
     )
-    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.05, 0, 0.05, 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.05, 0.05, 0.05, 0.4, 0.4, 0.4])
+    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.05, 0, 0.0, 0])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.05, 0.05, 0.02, np.pi/12, np.pi/12, np.pi/9])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.05, 0.05, 0.1, np.pi/12, np.pi/12, np.pi/9])
     RANDOM_RESET = True
-    RANDOM_XY_RANGE = 0.02
-    RANDOM_RZ_RANGE = 0.05
-    ACTION_SCALE = (1, 1, 1)
+    RANDOM_XY_RANGE = 0.03
+    RANDOM_RZ_RANGE = 0.2
+    ACTION_SCALE = np.array([0.1, 0.2, 0])
     DISPLAY_IMAGE = True
-    MAX_EPISODE_LENGTH = 500
+    MAX_EPISODE_LENGTH = 150
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 2000,
+        "translational_stiffness": 1500,
         "translational_damping": 89,
         "rotational_stiffness": 150,
         "rotational_damping": 7,
         "translational_Ki": 0,
-        "translational_clip_x": 0.0075,
-        "translational_clip_y": 0.0016,
-        "translational_clip_z": 0.0055,
-        "translational_clip_neg_x": 0.002,
-        "translational_clip_neg_y": 0.0016,
-        "translational_clip_neg_z": 0.005,
-        "rotational_clip_x": 0.01,
+        "translational_clip_x": 0.005,
+        "translational_clip_y": 0.005,
+        "translational_clip_z": 0.008,
+        "translational_clip_neg_x": 0.005,
+        "translational_clip_neg_y": 0.005,
+        "translational_clip_neg_z": 0.0025,
+        "rotational_clip_x": 0.025,
         "rotational_clip_y": 0.025,
-        "rotational_clip_z": 0.005,
-        "rotational_clip_neg_x": 0.01,
+        "rotational_clip_z": 0.025,
+        "rotational_clip_neg_x": 0.025,
         "rotational_clip_neg_y": 0.025,
-        "rotational_clip_neg_z": 0.005,
+        "rotational_clip_neg_z": 0.025,
         "rotational_Ki": 0,
     }
     PRECISION_PARAM = {
         "translational_stiffness": 2000,
         "translational_damping": 89,
-        "rotational_stiffness": 250,
-        "rotational_damping": 9,
+        "rotational_stiffness": 150,
+        "rotational_damping": 7,
         "translational_Ki": 0.0,
-        "translational_clip_x": 0.1,
-        "translational_clip_y": 0.1,
-        "translational_clip_z": 0.1,
-        "translational_clip_neg_x": 0.1,
-        "translational_clip_neg_y": 0.1,
-        "translational_clip_neg_z": 0.1,
-        "rotational_clip_x": 0.5,
-        "rotational_clip_y": 0.5,
-        "rotational_clip_z": 0.5,
-        "rotational_clip_neg_x": 0.5,
-        "rotational_clip_neg_y": 0.5,
-        "rotational_clip_neg_z": 0.5,
+        "translational_clip_x": 0.01,
+        "translational_clip_y": 0.01,
+        "translational_clip_z": 0.01,
+        "translational_clip_neg_x": 0.01,
+        "translational_clip_neg_y": 0.01,
+        "translational_clip_neg_z": 0.01,
+        "rotational_clip_x": 0.03,
+        "rotational_clip_y": 0.03,
+        "rotational_clip_z": 0.1,
+        "rotational_clip_neg_x": 0.03,
+        "rotational_clip_neg_y": 0.03,
+        "rotational_clip_neg_z": 0.1,
         "rotational_Ki": 0.0,
     }
 
 
 class TrainConfig(DefaultTrainingConfig):
-    image_keys = ["wrist_1", "wrist_2"]
-    classifier_keys = ["wrist_1", "wrist_2"]
-    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque", "gripper_pose"]
+    image_keys = ["wrist_1", "wrist_2", "side"]
+    classifier_keys = ["wrist_1", "wrist_2", "side"]
+    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque"] #, "gripper_pose"]
     buffer_period = 1000
     checkpoint_period = 5000
     steps_per_update = 50
@@ -128,10 +129,13 @@ class TrainConfig(DefaultTrainingConfig):
 
             def reward_func(obs):
                 sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
+                prediction = sigmoid(classifier(obs))
+                print("Predict: ", prediction)
                 # added check for z position to further robustify classifier, but should work without as well
-                return int(
-                    sigmoid(classifier(obs)) > 0.85 and obs["state"][0, 6] > 0.04
-                )
+                success = int((prediction > 0.8).item())
+                # if success:
+                #     input("Success")
+                return success
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
         return env

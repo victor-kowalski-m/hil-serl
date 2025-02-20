@@ -12,7 +12,7 @@ from experiments.mappings import CONFIG_MAPPING
 FLAGS = flags.FLAGS
 flags.DEFINE_string("exp_name", None, "Name of experiment corresponding to folder.")
 flags.DEFINE_integer(
-    "successes_needed", 200, "Number of successful transistions to collect."
+    "successes_needed", 400, "Number of successful transistions to collect."
 )
 
 

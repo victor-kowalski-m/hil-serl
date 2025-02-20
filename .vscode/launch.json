@@ -48,6 +48,18 @@
             ],
             "cwd": "examples",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "debug ram",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--exp_name",
+                "ram_insertion",
+            ],
+            "cwd": "examples",
+            "console": "integratedTerminal"
         }
     ]
 }
