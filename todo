@@ -1,11 +1,13 @@
-adjust housing cad to be thicker
-print stronger housing
-huge initial cost when using all the classifier data
-train classifier in my pc (with GPU)
 
-classifier seems to be working fine -> showed demos succesfully
-robot does not obey intervention: cant rotate much or approach insertion housing: config?
-try training pick and insert separetely
+do not use action
+try pcb grasp_pose traget_psoe
+
+make robot more compliant? -> lowered stiffness
+do not use side cam in image_keys
+debug erratic behavior
+check huge initial cost when using two or more classifier data
+**train classifier/learner in my pc (with GPU) -> maybe that is why policy is not converging?**
+adjust housing cad to be thicker
 
 
 record target pose (and find out what it is used for) OK
@@ -13,3 +15,8 @@ adjust exploration space OK
 adjust side cam crop OK
 correct gripper opening OK
 speed up rotation OK?
+
+clear queue when resetting OK
+classifier seems to be working fine -> showed demos succesfully OK
+robot does not obey intervention: cant rotate much or approach insertion housing: config? OK
+try training pick and insert separetely OK

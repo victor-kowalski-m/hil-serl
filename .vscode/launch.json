@@ -4,7 +4,24 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {   "name": "debug actor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "$@",
+                "--exp_name",
+                "usb_pickup_insertion",
+                "--checkpoint_path=../../experiments/usb_pickup_insertion/debug",
+                "--actor"
+            ],
+            "cwd": "examples/experiments/usb_pickup_insertion" ,
+            "console": "integratedTerminal",
+            "env": {
+                "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": ".1"
+            },
+        },
         {
             "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
@@ -29,7 +46,7 @@
                 "--exp_name",
                 "usb_pickup_insertion",
             ],
-            "cwd": "~/hil-serl/examples",
+            "cwd": "examples",
             "console": "integratedTerminal"
         }
     ]

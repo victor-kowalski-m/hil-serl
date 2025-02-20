@@ -39,7 +39,7 @@ class ImageDisplayer(threading.Thread):
 
             frame = np.concatenate(
                 [
-                    cv2.resize(v, (128, 128))
+                    cv2.resize(v, (256, 256))
                     for k, v in img_array.items()
                     if "full" not in k
                 ],
