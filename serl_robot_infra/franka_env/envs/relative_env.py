@@ -41,11 +41,13 @@ class RelativeFrame(gym.Wrapper):
         # Transform action from end-effector frame to base frame
         transformed_action = self.transform_action(action)
         obs, reward, done, truncated, info = self.env.step(transformed_action)
-        info['original_state_obs'] = copy.deepcopy(obs['state'])
+        info["original_state_obs"] = copy.deepcopy(obs["state"])
 
         # this is to convert the spacemouse intervention action
         if "intervene_action" in info:
-            info["intervene_action"] = self.transform_action_inv(info["intervene_action"])
+            info["intervene_action"] = self.transform_action_inv(
+                info["intervene_action"]
+            )
 
         # Update adjoint matrix
         self.adjoint_matrix = construct_adjoint_matrix(obs["state"]["tcp_pose"])
@@ -56,7 +58,7 @@ class RelativeFrame(gym.Wrapper):
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
-        info['original_state_obs'] = copy.deepcopy(obs['state'])
+        info["original_state_obs"] = copy.deepcopy(obs["state"])
 
         # Update adjoint matrix
         self.adjoint_matrix = construct_adjoint_matrix(obs["state"]["tcp_pose"])
@@ -91,7 +93,7 @@ class RelativeFrame(gym.Wrapper):
     def transform_action(self, action: np.ndarray):
         """
         Transform action from body(end-effector) frame into into spatial(base) frame
-        using the adjoint matrix. 
+        using the adjoint matrix.
         """
         action = np.array(action)  # in case action is a jax read-only array
         action[:6] = self.adjoint_matrix @ action[:6]
@@ -146,11 +148,17 @@ class DualRelativeFrame(gym.Wrapper):
 
         # this is to convert the spacemouse intervention action
         if "intervene_action" in info:
-            info["intervene_action"] = self.transform_action_inv(info["intervene_action"])
+            info["intervene_action"] = self.transform_action_inv(
+                info["intervene_action"]
+            )
 
         # Update adjoint matrix
-        self.left_adjoint_matrix = construct_adjoint_matrix(obs["state"]["left/tcp_pose"])
-        self.right_adjoint_matrix = construct_adjoint_matrix(obs["state"]["right/tcp_pose"])
+        self.left_adjoint_matrix = construct_adjoint_matrix(
+            obs["state"]["left/tcp_pose"]
+        )
+        self.right_adjoint_matrix = construct_adjoint_matrix(
+            obs["state"]["right/tcp_pose"]
+        )
 
         # Transform observation to spatial frame
         transformed_obs = self.transform_observation(obs)
@@ -160,8 +168,12 @@ class DualRelativeFrame(gym.Wrapper):
         obs, info = self.env.reset(**kwargs)
 
         # Update adjoint matrix
-        self.left_adjoint_matrix = construct_adjoint_matrix(obs["state"]["left/tcp_pose"])
-        self.right_adjoint_matrix = construct_adjoint_matrix(obs["state"]["right/tcp_pose"])
+        self.left_adjoint_matrix = construct_adjoint_matrix(
+            obs["state"]["left/tcp_pose"]
+        )
+        self.right_adjoint_matrix = construct_adjoint_matrix(
+            obs["state"]["right/tcp_pose"]
+        )
 
         if self.include_relative_pose:
             # Update transformation matrix from the reset pose's relative frame to base frame
@@ -183,7 +195,9 @@ class DualRelativeFrame(gym.Wrapper):
         obs["state"]["left/tcp_vel"] = left_adjoint_inv @ obs["state"]["left/tcp_vel"]
 
         right_adjoint_inv = np.linalg.inv(self.right_adjoint_matrix)
-        obs["state"]["right/tcp_vel"] = right_adjoint_inv @ obs["state"]["right/tcp_vel"]
+        obs["state"]["right/tcp_vel"] = (
+            right_adjoint_inv @ obs["state"]["right/tcp_vel"]
+        )
 
         if self.include_relative_pose:
             left_T_b_o = construct_homogeneous_matrix(obs["state"]["left/tcp_pose"])
@@ -200,8 +214,9 @@ class DualRelativeFrame(gym.Wrapper):
             # Reconstruct transformed tcp_pose vector
             right_p_b_r = right_T_b_r[:3, 3]
             right_theta_b_r = R.from_matrix(right_T_b_r[:3, :3]).as_quat()
-            obs["state"]["right/tcp_pose"] = np.concatenate((right_p_b_r, right_theta_b_r))
-
+            obs["state"]["right/tcp_pose"] = np.concatenate(
+                (right_p_b_r, right_theta_b_r)
+            )
 
         return obs
 

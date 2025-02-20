@@ -1,4 +1,5 @@
 """ Test the spacemouse output. """
+
 import time
 import numpy as np
 from franka_env.spacemouse.spacemouse_expert import SpaceMouseExpert

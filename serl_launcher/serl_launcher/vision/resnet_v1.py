@@ -9,6 +9,7 @@ import numpy as np
 
 from serl_launcher.vision.film_conditioning_layer import FilmConditioning
 from serl_launcher.vision.data_augmentations import resize
+
 ModuleDef = Any
 
 

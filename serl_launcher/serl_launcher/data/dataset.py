@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Dict, Iterable, Optional, Tuple, Union
 
 import jax
@@ -84,9 +83,9 @@ class Dataset(object):
     ) -> frozen_dict.FrozenDict:
         if indx is None:
             if hasattr(self.np_random, "integers"):
-                indx = self.np_random.integers(len(self), size=batch_size)
+                indx = self.np_random.integers(self.dataset_len, size=batch_size)
             else:
-                indx = self.np_random.randint(len(self), size=batch_size)
+                indx = self.np_random.randint(self.dataset_len, size=batch_size)
 
         batch = dict()
 

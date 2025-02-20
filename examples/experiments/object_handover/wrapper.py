@@ -1,5 +1,3 @@
-import copy
-import threading
 import time
 from typing import OrderedDict
 from franka_env.camera.rs_capture import RSCapture
@@ -11,12 +9,18 @@ import requests
 from scipy.spatial.transform import Rotation as R
 from franka_env.envs.franka_env import FrankaEnv
 
+
 class HandOffEnv(FrankaEnv):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.resetpos = np.concatenate([self.config.RESET_POSE[:3], R.from_euler("xyz", self.config.RESET_POSE[3:]).as_quat()])
+        self.resetpos = np.concatenate(
+            [
+                self.config.RESET_POSE[:3],
+                R.from_euler("xyz", self.config.RESET_POSE[3:]).as_quat(),
+            ]
+        )
 
-    def init_cameras(self, name_serial_dict=None):
+    def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
             self.close_cameras()
@@ -26,9 +30,7 @@ class HandOffEnv(FrankaEnv):
             if cam_name == "side_classifier":
                 self.cap["side_classifier"] = self.cap["side"]
             else:
-                cap = VideoCapture(
-                    RSCapture(name=cam_name, **kwargs)
-                )
+                cap = VideoCapture(RSCapture(name=cam_name, **kwargs))
                 self.cap[cam_name] = cap
 
     def clip_safety_box(self, pose: np.ndarray) -> np.ndarray:
@@ -63,24 +65,31 @@ class HandOffEnv(FrankaEnv):
         pose[3:] = R.from_euler("xyz", euler).as_quat()
 
         return pose
-    
+
     def _send_gripper_command(self, pos: float, mode="binary"):
         """Internal function to send gripper command to the robot."""
         if mode == "binary":
-            if (pos <= -0.5) and (self.curr_gripper_pos > 0.85) and (time.time() - self.last_gripper_act > 2.0):  # close gripper
+            if (
+                (pos <= -0.5)
+                and (self.curr_gripper_pos > 0.85)
+                and (time.time() - self.last_gripper_act > 2.0)
+            ):  # close gripper
                 requests.post(self.url + "close_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            elif (pos >= 0.5) and (self.curr_gripper_pos < 0.85) and (time.time() - self.last_gripper_act > 2.0):  # open gripper
+            elif (
+                (pos >= 0.5)
+                and (self.curr_gripper_pos < 0.85)
+                and (time.time() - self.last_gripper_act > 2.0)
+            ):  # open gripper
                 requests.post(self.url + "open_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            else: 
+            else:
                 return
         elif mode == "continuous":
             raise NotImplementedError("Continuous gripper control is optional")
 
-    
     def go_to_reset(self, joint_reset=False):
         """
         The concrete steps to perform reset should be
@@ -154,7 +163,7 @@ class GripperPenaltyWrapper(gym.Wrapper):
         ):
             info["grasp_penalty"] += self.penalty
             print("left grasp penalty")
-            
+
         if (action[13] < -0.5 and self.last_right_gripper_pos > 0.85) or (
             action[13] > 0.5 and self.last_right_gripper_pos < 0.85
         ):
@@ -163,5 +172,5 @@ class GripperPenaltyWrapper(gym.Wrapper):
 
         self.last_left_gripper_pos = observation["state"][0, 0]
         self.last_right_gripper_pos = observation["state"][0, 13]
-        
+
         return observation, reward, terminated, truncated, info

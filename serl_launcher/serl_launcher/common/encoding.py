@@ -1,10 +1,9 @@
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable
 
-import flax
 import flax.linen as nn
 import jax
 import jax.numpy as jnp
-from einops import rearrange, repeat
+from einops import rearrange
 
 
 class EncodingWrapper(nn.Module):

@@ -9,11 +9,12 @@ import gymnasium as gym
 import time
 from franka_env.envs.franka_env import FrankaEnv
 
+
 class USBEnv(FrankaEnv):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-    
-    def init_cameras(self, name_serial_dict=None):
+
+    def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
             self.close_cameras()
@@ -23,9 +24,7 @@ class USBEnv(FrankaEnv):
             if cam_name == "side_classifier":
                 self.cap["side_classifier"] = self.cap["side_policy"]
             else:
-                cap = VideoCapture(
-                    RSCapture(name=cam_name, **kwargs)
-                )
+                cap = VideoCapture(RSCapture(name=cam_name, **kwargs))
                 self.cap[cam_name] = cap
 
     def reset(self, **kwargs):
@@ -34,30 +33,30 @@ class USBEnv(FrankaEnv):
         self._send_pos_command(self.currpos)
         time.sleep(0.1)
         requests.post(self.url + "update_param", json=self.config.PRECISION_PARAM)
-        self._send_gripper_command(1.0)
-        
+        self._send_gripper_command(1.0, force=True)
+
         # Move above the target pose
         target = copy.deepcopy(self.currpos)
         target[2] = self.config.TARGET_POSE[2] + 0.05
-        self.interpolate_move(target, timeout=0.5)
-        time.sleep(0.5)
+        self.interpolate_move(target, timeout=1)
+        time.sleep(1)
         self.interpolate_move(self.config.TARGET_POSE, timeout=0.5)
         time.sleep(0.5)
-        self._send_gripper_command(-1.0)
-
+        self._send_gripper_command(-1.0, force=True)
         self._update_currpos()
+        time.sleep(0.5)
         reset_pose = copy.deepcopy(self.config.TARGET_POSE)
-        reset_pose[1] += 0.04
+        reset_pose[2] += 0.05
         self.interpolate_move(reset_pose, timeout=0.5)
 
         obs, info = super().reset(**kwargs)
-        self._send_gripper_command(1.0)
         time.sleep(1)
         self.success = False
         self._update_currpos()
-        obs = self._get_obs()
+        for i in range(10):
+            obs = self._get_obs()
         return obs, info
-    
+
     def interpolate_move(self, goal: np.ndarray, timeout: float):
         """Move the robot to the goal position with linear interpolation."""
         if goal.shape == (6,):
@@ -65,7 +64,7 @@ class USBEnv(FrankaEnv):
         self._send_pos_command(goal)
         time.sleep(timeout)
         self._update_currpos()
-    
+
     def go_to_reset(self, joint_reset=False):
         """
         The concrete steps to perform reset should be
@@ -90,10 +89,10 @@ class USBEnv(FrankaEnv):
                 -self.random_rz_range, self.random_rz_range
             )
             reset_pose[3:] = euler_2_quat(euler_random)
-            self.interpolate_move(reset_pose, timeout=1)
+            self.interpolate_move(reset_pose, timeout=2)
         else:
             reset_pose = self.resetpos.copy()
-            self.interpolate_move(reset_pose, timeout=1)
+            self.interpolate_move(reset_pose, timeout=2)
 
         # Change to compliance mode
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)

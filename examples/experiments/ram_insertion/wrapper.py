@@ -1,31 +1,30 @@
 import copy
 import time
 from franka_env.utils.rotations import euler_2_quat
-from scipy.spatial.transform import Rotation as R
 import numpy as np
 import requests
 from pynput import keyboard
 
 from franka_env.envs.franka_env import FrankaEnv
 
+
 class RAMEnv(FrankaEnv):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.should_regrasp = False
+        self.should_regrasp = True
 
         def on_press(key):
             if str(key) == "Key.f1":
                 self.should_regrasp = True
 
-        listener = keyboard.Listener(
-            on_press=on_press)
+        listener = keyboard.Listener(on_press=on_press)
         listener.start()
 
     def go_to_reset(self, joint_reset=False):
         """
         Move to the rest position defined in base class.
         Add a small z offset before going to rest to avoid collision with object.
-        """        
+        """
         # use compliance mode for coupled reset
         self._update_currpos()
         self._send_pos_command(self.currpos)
@@ -64,7 +63,6 @@ class RAMEnv(FrankaEnv):
         # Change to compliance mode
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
 
-
     def regrasp(self):
         # use compliance mode for coupled reset
         self._update_currpos()
@@ -74,16 +72,22 @@ class RAMEnv(FrankaEnv):
 
         # pull up
         self._update_currpos()
-        reset_pose = copy.deepcopy(self.currpos)
-        reset_pose[2] = self.resetpos[2] + 0.04
-        self.interpolate_move(reset_pose, timeout=1)
+        # reset_pose = copy.deepcopy(self.currpos)
+        # reset_pose[2] = self.resetpos[2] + 0.04
+        # self.interpolate_move(reset_pose, timeout=1)
 
-        input("Press enter to release gripper...")
+        # input("Press enter to release gripper...")
+        time.sleep(0.5)
         self._send_gripper_command(1.0)
-        input("Place RAM in holder and press enter to grasp...")
+        time.sleep(1.0)
+        # input("Place RAM in holder and press enter to grasp...")
+        reset_pose = copy.deepcopy(self.currpos)
+        reset_pose[2] = self.resetpos[2] + 0.05
+        self.interpolate_move(reset_pose, timeout=1)
+        time.sleep(2)
         top_pose = self.config.GRASP_POSE.copy()
         top_pose[2] += 0.05
-        top_pose[0] += np.random.uniform(-0.005, 0.005)
+        # top_pose[0] += np.random.uniform(-0.005, 0.005)
         self.interpolate_move(top_pose, timeout=1)
         time.sleep(0.5)
 
@@ -91,7 +95,7 @@ class RAMEnv(FrankaEnv):
         grasp_pose[2] -= 0.05
         self.interpolate_move(grasp_pose, timeout=0.5)
 
-        requests.post(self.url + "close_gripper_slow")
+        requests.post(self.url + "close_gripper")
         self.last_gripper_act = time.time()
         time.sleep(2)
 
@@ -101,7 +105,6 @@ class RAMEnv(FrankaEnv):
         self.interpolate_move(self.config.RESET_POSE, timeout=1)
         time.sleep(0.5)
 
-
     def reset(self, joint_reset=False, **kwargs):
         self.last_gripper_act = time.time()
         if self.save_video:
@@ -110,7 +113,7 @@ class RAMEnv(FrankaEnv):
         # if True:
         if self.should_regrasp:
             self.regrasp()
-            self.should_regrasp = False
+            # self.should_regrasp = False
 
         self._recover()
         self.go_to_reset(joint_reset=False)
@@ -118,7 +121,8 @@ class RAMEnv(FrankaEnv):
         self.curr_path_length = 0
 
         self._update_currpos()
-        obs = self._get_obs()
+        for i in range(10):
+            obs = self._get_obs()
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
         self.terminate = False
         return obs, {}

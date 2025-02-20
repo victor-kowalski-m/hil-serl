@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {   "name": "debug actor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "$@",
+                "--exp_name",
+                "usb_pickup_insertion",
+                "--checkpoint_path=../../experiments/usb_pickup_insertion/debug",
+                "--actor"
+            ],
+            "cwd": "examples/experiments/usb_pickup_insertion" ,
+            "console": "integratedTerminal",
+            "env": {
+                "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": ".1"
+            },
+        },
+        {
+            "name": "Python Debugger: Current File with Arguments",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": "${command:pickArgs}"
+        },
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debug usb",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--exp_name",
+                "usb_pickup_insertion",
+            ],
+            "cwd": "examples",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "debug ram",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--exp_name",
+                "ram_insertion",
+            ],
+            "cwd": "examples",
+            "console": "integratedTerminal"
+        }
+    ]
+}

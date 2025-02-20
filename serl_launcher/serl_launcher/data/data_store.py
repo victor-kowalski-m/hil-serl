@@ -1,8 +1,7 @@
 from threading import Lock
-from typing import Union, Iterable
+from typing import Iterable
 
 import gymnasium as gym
-import jax
 from serl_launcher.data.replay_buffer import ReplayBuffer
 from serl_launcher.data.memory_efficient_replay_buffer import (
     MemoryEfficientReplayBuffer,
@@ -51,7 +50,12 @@ class MemoryEfficientReplayBufferDataStore(MemoryEfficientReplayBuffer, DataStor
         **kwargs,
     ):
         MemoryEfficientReplayBuffer.__init__(
-            self, observation_space, action_space, capacity, pixel_keys=image_keys, **kwargs
+            self,
+            observation_space,
+            action_space,
+            capacity,
+            pixel_keys=image_keys,
+            **kwargs,
         )
         DataStoreBase.__init__(self, capacity)
         self._lock = Lock()
@@ -86,8 +90,6 @@ def populate_data_store(
     :return data_store
     """
     import pickle as pkl
-    import numpy as np
-    from copy import deepcopy
 
     for demo_path in demos_path:
         with open(demo_path, "rb") as f:

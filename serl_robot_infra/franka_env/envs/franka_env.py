@@ -1,5 +1,7 @@
 """Gym Interface for Franka"""
+
 import os
+import re
 import numpy as np
 import gymnasium as gym
 import cv2
@@ -12,10 +14,11 @@ import threading
 from datetime import datetime
 from collections import OrderedDict
 from typing import Dict
+from cv2 import VideoCapture as CVVideoCapture
 
 from franka_env.camera.video_capture import VideoCapture
 from franka_env.camera.rs_capture import RSCapture
-from franka_env.utils.rotations import euler_2_quat, quat_2_euler
+from franka_env.utils.rotations import euler_2_quat
 
 
 class ImageDisplayer(threading.Thread):
@@ -26,16 +29,24 @@ class ImageDisplayer(threading.Thread):
         self.name = name
 
     def run(self):
+        print("RUUUUUUUUUN")
+
         while True:
             img_array = self.queue.get()  # retrieve an image from the queue
             if img_array is None:  # None is our signal to exit
                 break
+            
 
             frame = np.concatenate(
-                [cv2.resize(v, (128, 128)) for k, v in img_array.items() if "full" not in k], axis=1
+                [
+                    cv2.resize(v, (256, 256))
+                    for k, v in img_array.items()
+                    if "full" not in k
+                ],
+                axis=1,
             )
 
-            cv2.imshow(self.name, frame)
+            cv2.imshow(self.name, frame) # img_array["side_full"])
             cv2.waitKey(1)
 
 
@@ -47,8 +58,15 @@ class DefaultEnvConfig:
 
     SERVER_URL: str = "http://127.0.0.1:5000/"
     REALSENSE_CAMERAS: Dict = {
-        "wrist_1": "130322274175",
-        "wrist_2": "127122270572",
+        "wrist_1": {
+            "serial_number": "241122072130",
+            "dim": (1280, 720),
+            "exposure": 40000,
+        },
+    }
+    GENERIC_CAMERAS: Dict = {
+        # "front": {"id_name": "usb-Razer_Inc_Razer_Kiyo_X_01.00.00-video-index0"},
+        # "side": {"id_name": "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     IMAGE_CROP: dict[str, callable] = {}
     TARGET_POSE: np.ndarray = np.zeros((6,))
@@ -67,7 +85,7 @@ class DefaultEnvConfig:
     LOAD_PARAM: Dict[str, float] = {
         "mass": 0.0,
         "F_x_center_load": [0.0, 0.0, 0.0],
-        "load_inertia": [0, 0, 0, 0, 0, 0, 0, 0, 0]
+        "load_inertia": [0, 0, 0, 0, 0, 0, 0, 0, 0],
     }
     DISPLAY_IMAGE: bool = True
     GRIPPER_SLEEP: float = 0.6
@@ -108,7 +126,9 @@ class FrankaEnv(gym.Env):
         self.random_xy_range = config.RANDOM_XY_RANGE
         self.random_rz_range = config.RANDOM_RZ_RANGE
         self.hz = hz
-        self.joint_reset_cycle = config.JOINT_RESET_PERIOD  # reset the robot joint every 200 cycles
+        self.joint_reset_cycle = (
+            config.JOINT_RESET_PERIOD
+        )  # reset the robot joint every 200 cycles
 
         self.save_video = save_video
         if self.save_video:
@@ -146,8 +166,11 @@ class FrankaEnv(gym.Env):
                     }
                 ),
                 "images": gym.spaces.Dict(
-                    {key: gym.spaces.Box(0, 255, shape=(128, 128, 3), dtype=np.uint8) 
-                                for key in config.REALSENSE_CAMERAS}
+                    {
+                        key: gym.spaces.Box(0, 255, shape=(128, 128, 3), dtype=np.uint8)
+                        for key in list(config.REALSENSE_CAMERAS.keys())
+                        + list(config.GENERIC_CAMERAS.keys())
+                    }
                 ),
             }
         )
@@ -157,7 +180,8 @@ class FrankaEnv(gym.Env):
             return
 
         self.cap = None
-        self.init_cameras(config.REALSENSE_CAMERAS)
+        self.init_realsense_cameras(config.REALSENSE_CAMERAS)
+        self.init_generic_cameras(config.GENERIC_CAMERAS)
         if self.display_image:
             self.img_queue = queue.Queue()
             self.displayer = ImageDisplayer(self.img_queue, self.url)
@@ -173,10 +197,13 @@ class FrankaEnv(gym.Env):
 
         if not fake_env:
             from pynput import keyboard
+
             self.terminate = False
+
             def on_press(key):
                 if key == keyboard.Key.esc:
                     self.terminate = True
+
             self.listener = keyboard.Listener(on_press=on_press)
             self.listener.start()
 
@@ -233,7 +260,9 @@ class FrankaEnv(gym.Env):
         self._update_currpos()
         ob = self._get_obs()
         reward = self.compute_reward(ob)
-        done = self.curr_path_length >= self.max_episode_length or reward or self.terminate
+        done = (
+            self.curr_path_length >= self.max_episode_length or reward or self.terminate
+        )
         return ob, int(reward), done, False, {"succeed": reward}
 
     def compute_reward(self, obs) -> bool:
@@ -241,9 +270,11 @@ class FrankaEnv(gym.Env):
         # convert from quat to euler first
         current_rot = Rotation.from_quat(current_pose[3:]).as_matrix()
         target_rot = Rotation.from_euler("xyz", self._TARGET_POSE[3:]).as_matrix()
-        diff_rot = current_rot.T  @ target_rot
+        diff_rot = current_rot.T @ target_rot
         diff_euler = Rotation.from_matrix(diff_rot).as_euler("xyz")
-        delta = np.abs(np.hstack([current_pose[:3] - self._TARGET_POSE[:3], diff_euler]))
+        delta = np.abs(
+            np.hstack([current_pose[:3] - self._TARGET_POSE[:3], diff_euler])
+        )
         # print(f"Delta: {delta}")
         if np.all(delta < self._REWARD_THRESHOLD):
             return True
@@ -258,21 +289,28 @@ class FrankaEnv(gym.Env):
         full_res_images = {}  # New dictionary to store full resolution cropped images
         for key, cap in self.cap.items():
             try:
-                rgb = cap.read()
-                cropped_rgb = self.config.IMAGE_CROP[key](rgb) if key in self.config.IMAGE_CROP else rgb
+                _, rgb = cap.read()
+                cropped_rgb = (
+                    self.config.IMAGE_CROP[key](rgb)
+                    if key in self.config.IMAGE_CROP
+                    else rgb
+                )
                 resized = cv2.resize(
                     cropped_rgb, self.observation_space["images"][key].shape[:2][::-1]
                 )
                 images[key] = resized[..., ::-1]
                 display_images[key] = resized
                 display_images[key + "_full"] = cropped_rgb
-                full_res_images[key] = copy.deepcopy(cropped_rgb)  # Store the full resolution cropped image
+                full_res_images[key] = copy.deepcopy(
+                    cropped_rgb
+                )  # Store the full resolution cropped image
             except queue.Empty:
                 input(
                     f"{key} camera frozen. Check connect, then press enter to relaunch..."
                 )
                 cap.close()
-                self.init_cameras(self.config.REALSENSE_CAMERAS)
+                self.init_realsense_cameras(self.config.REALSENSE_CAMERAS)
+                self.init_generic_cameras(self.config.GENERIC_CAMERAS)
                 return self.get_im()
 
         # Store full resolution cropped images separately
@@ -341,7 +379,10 @@ class FrankaEnv(gym.Env):
             self.save_video_recording()
 
         self.cycle_count += 1
-        if self.joint_reset_cycle!=0 and self.cycle_count % self.joint_reset_cycle == 0:
+        if (
+            self.joint_reset_cycle != 0
+            and self.cycle_count % self.joint_reset_cycle == 0
+        ):
             self.cycle_count = 0
             joint_reset = True
 
@@ -358,48 +399,81 @@ class FrankaEnv(gym.Env):
     def save_video_recording(self):
         try:
             if len(self.recording_frames):
-                if not os.path.exists('./videos'):
-                    os.makedirs('./videos')
-                
+                if not os.path.exists("./videos"):
+                    os.makedirs("./videos")
+
                 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                
+
                 for camera_key in self.recording_frames[0].keys():
                     if self.url == "http://127.0.0.1:5000/":
-                        video_path = f'./videos/left_{camera_key}_{timestamp}.mp4'
+                        video_path = f"./videos/left_{camera_key}_{timestamp}.mp4"
                     else:
-                        video_path = f'./videos/right_{camera_key}_{timestamp}.mp4'
-                    
+                        video_path = f"./videos/right_{camera_key}_{timestamp}.mp4"
+
                     # Get the shape of the first frame for this camera
                     first_frame = self.recording_frames[0][camera_key]
                     height, width = first_frame.shape[:2]
-                    
+
                     video_writer = cv2.VideoWriter(
                         video_path,
                         cv2.VideoWriter_fourcc(*"mp4v"),
                         10,
                         (width, height),
                     )
-                    
+
                     for frame_dict in self.recording_frames:
                         video_writer.write(frame_dict[camera_key])
-                    
+
                     video_writer.release()
                     print(f"Saved video for camera {camera_key} at {video_path}")
-                
+
             self.recording_frames.clear()
         except Exception as e:
             print(f"Failed to save video: {e}")
 
-    def init_cameras(self, name_serial_dict=None):
+    def save_image(self, cam, cam_name):
+        ret, frame = cam.read()
+        img_name = cam_name + ".png"
+        if not ret:
+            print("failed to grab frame")
+            exit(1)
+        cv2.imwrite(img_name, frame)
+
+    def init_realsense_cameras(self, name_serial_dict=None):
         """Init both wrist cameras."""
         if self.cap is not None:  # close cameras if they are already open
             self.close_cameras()
 
         self.cap = OrderedDict()
         for cam_name, kwargs in name_serial_dict.items():
-            cap = VideoCapture(
-                RSCapture(name=cam_name, **kwargs)
-            )
+            cap = VideoCapture(RSCapture(name=cam_name, **kwargs))
+            self.cap[cam_name] = cap
+
+    def init_generic_cameras(self, cam_dict):
+        def get_camera_by_id_name(cam_name):
+            cam_file = "/dev/v4l/by-id/" + cam_name
+            if not os.path.exists(cam_file):
+                raise ValueError(f"Camera {cam_name} does not exist. Try reconnecting")
+
+            device_path = os.path.realpath(cam_file)
+            device_re = re.compile("\/dev\/video(\d+)")
+            info = device_re.match(device_path)
+            if info:
+                device_num = int(info.group(1))
+                return device_num
+            else:
+                raise RuntimeError("/dev/videoX not found. Not sure what to do.")
+
+        for cam_name, val in cam_dict.items():
+            print(cam_name, val)
+            if "id_name" in val:
+                name = get_camera_by_id_name(val["id_name"])
+            else:
+                name = val["name"]
+            print(f"NAME::::: {name}")
+            cap = CVVideoCapture(name)
+            if not cap.isOpened():
+                raise RuntimeError(f"Could not open camera {name}")
             self.cap[cam_name] = cap
 
     def close_cameras(self):
@@ -421,18 +495,30 @@ class FrankaEnv(gym.Env):
         data = {"arr": arr.tolist()}
         requests.post(self.url + "pose", json=data)
 
-    def _send_gripper_command(self, pos: float, mode="binary"):
+    def _send_gripper_command(self, pos: float, mode="binary", force=False):
         """Internal function to send gripper command to the robot."""
         if mode == "binary":
-            if (pos <= -0.5) and (self.curr_gripper_pos > 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # close gripper
+            if (
+                (pos <= -0.5)
+                and (self.curr_gripper_pos > 0.05)
+                and (
+                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+                )
+            ):  # close gripper
                 requests.post(self.url + "close_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            elif (pos >= 0.5) and (self.curr_gripper_pos < 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # open gripper
+            elif (
+                (pos >= 0.5)
+                and (self.curr_gripper_pos < 0.45)
+                and (
+                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+                )
+            ):  # open gripper
                 requests.post(self.url + "open_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            else: 
+            else:
                 return
         elif mode == "continuous":
             raise NotImplementedError("Continuous gripper control is optional")
@@ -483,7 +569,7 @@ class FrankaEnv(gym.Env):
         return copy.deepcopy(dict(images=images, state=state_observation))
 
     def close(self):
-        if hasattr(self, 'listener'):
+        if hasattr(self, "listener"):
             self.listener.stop()
         self.close_cameras()
         if self.display_image:

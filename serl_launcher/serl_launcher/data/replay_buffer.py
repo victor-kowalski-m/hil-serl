@@ -1,5 +1,5 @@
 import collections
-from typing import Any, Iterator, Optional, Sequence, Tuple, Union
+from typing import Optional, Union
 
 import gymnasium as gym
 import jax
@@ -59,14 +59,16 @@ class ReplayBuffer(Dataset):
         )
 
         if include_next_actions:
-            dataset_dict['next_actions'] = np.empty((capacity, *action_space.shape), dtype=action_space.dtype)
-            dataset_dict['next_intvn'] = np.empty((capacity,), dtype=bool)
-            
+            dataset_dict["next_actions"] = np.empty(
+                (capacity, *action_space.shape), dtype=action_space.dtype
+            )
+            dataset_dict["next_intvn"] = np.empty((capacity,), dtype=bool)
+
         if include_label:
-            dataset_dict['labels'] = np.empty((capacity,), dtype=int)
-        
+            dataset_dict["labels"] = np.empty((capacity,), dtype=int)
+
         if include_grasp_penalty:
-            dataset_dict['grasp_penalty'] = np.empty((capacity,), dtype=np.float32)
+            dataset_dict["grasp_penalty"] = np.empty((capacity,), dtype=np.float32)
 
         super().__init__(dataset_dict)
 

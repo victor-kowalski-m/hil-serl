@@ -28,6 +28,7 @@ class BinaryClassifier(nn.Module):
         x = nn.Dense(1)(x)
         return x
 
+
 class NWayClassifier(nn.Module):
     encoder_def: nn.Module
     hidden_dim: int = 256
@@ -78,7 +79,7 @@ def create_classifier(
     classifier = TrainState.create(
         apply_fn=classifier_def.apply,
         params=params,
-        tx=optax.adam(learning_rate=1e-4),
+        tx=optax.adam(learning_rate=3e-4),
     )
 
     file_name = "resnet10_params.pkl"
@@ -113,7 +114,7 @@ def create_classifier(
 
     with open(file_path, "rb") as f:
         encoder_params = pkl.load(f)
-            
+
     param_count = sum(x.size for x in jax.tree_leaves(encoder_params))
     print(
         f"Loaded {param_count/1e6}M parameters from ResNet-10 pretrained on ImageNet-1K"
@@ -132,6 +133,7 @@ def create_classifier(
 
     classifier = classifier.replace(params=new_params)
     return classifier
+
 
 def load_classifier_func(
     key: jnp.ndarray,

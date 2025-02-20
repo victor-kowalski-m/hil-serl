@@ -36,6 +36,7 @@ def construct_homogeneous_matrix(tcp_pose):
     T[3, 3] = 1
     return T
 
+
 def construct_adjoint_matrix_from_euler(tcp_pose):
     """
     Construct the adjoint matrix for a spatial velocity vector

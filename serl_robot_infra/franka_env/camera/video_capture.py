@@ -1,7 +1,6 @@
 import queue
 import threading
-import time
-import numpy as np
+
 
 class VideoCapture:
     def __init__(self, cap, name=None):
@@ -29,7 +28,7 @@ class VideoCapture:
 
     def read(self):
         # print(self.name, self.q.qsize())
-        return self.q.get(timeout=5)
+        return True, self.q.get(timeout=5)
 
     def close(self):
         self.enable = False
