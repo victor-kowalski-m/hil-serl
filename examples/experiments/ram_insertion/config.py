@@ -20,7 +20,8 @@ from experiments.ram_insertion.wrapper import RAMEnv
 
 
 class EnvConfig(DefaultEnvConfig):
-    SERVER_URL = "http://127.0.0.1:5000/"
+    # SERVER_URL = "http://127.0.0.1:5000/"
+    SERVER_URL = "http://0.0.0.0:5000/"
     REALSENSE_CAMERAS = {
         "wrist_1": {
             "serial_number": "241122072130",
@@ -40,38 +41,41 @@ class EnvConfig(DefaultEnvConfig):
         "wrist_2": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     TARGET_POSE = np.array(
-        [0.4881879113354628,0.2208223800177667,0.05731334740852401, np.pi, 0, np.pi/2]
+        [0.48743032062790537,0.22067800416581693,0.06040979312278208,np.pi,0.0026128038950117283,1.654021177685403]
+        # [0.4881879113354628,0.2208223800177667,0.05731334740852401, np.pi, 0, np.pi/2]
     )
     GRASP_POSE = np.array(
-        [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, np.pi/2]
+        # [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, np.pi/2]
+        # [0.6797256032879704,0.145140473338448678,0.060789280023034964, np.pi, 0, np.pi/2]
+        [0.6797256032879704,0.135140473338448678,0.055789280023034964, np.pi, 0, np.pi/2]
     )
-    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.05, 0, 0.0, 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.05, 0.05, 0.02, np.pi/12, np.pi/12, np.pi/9])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.05, 0.05, 0.1, np.pi/12, np.pi/12, np.pi/9])
+    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.03, 0, 0.0, 0])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.02, 0.02, 0.01, np.pi/12, np.pi/12, np.pi/12])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.02, 0.02, 0.04, np.pi/12, np.pi/12, np.pi/12])
     RANDOM_RESET = True
-    RANDOM_XY_RANGE = 0.03
-    RANDOM_RZ_RANGE = 0.2
+    RANDOM_XY_RANGE = 0.02
+    RANDOM_RZ_RANGE = 0.1
     ACTION_SCALE = np.array([0.1, 0.2, 0])
     DISPLAY_IMAGE = True
-    MAX_EPISODE_LENGTH = 150
+    MAX_EPISODE_LENGTH = 100
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 1500,
+        "translational_stiffness": 2000,
         "translational_damping": 89,
         "rotational_stiffness": 150,
         "rotational_damping": 7,
         "translational_Ki": 0,
-        "translational_clip_x": 0.005,
-        "translational_clip_y": 0.005,
-        "translational_clip_z": 0.008,
-        "translational_clip_neg_x": 0.005,
-        "translational_clip_neg_y": 0.005,
-        "translational_clip_neg_z": 0.0025,
-        "rotational_clip_x": 0.025,
-        "rotational_clip_y": 0.025,
-        "rotational_clip_z": 0.025,
-        "rotational_clip_neg_x": 0.025,
-        "rotational_clip_neg_y": 0.025,
-        "rotational_clip_neg_z": 0.025,
+        "translational_clip_x": 0.0025,
+        "translational_clip_y": 0.0025,
+        "translational_clip_z": 0.0075,
+        "translational_clip_neg_x": 0.0025,
+        "translational_clip_neg_y": 0.0025,
+        "translational_clip_neg_z": 0.005,
+        "rotational_clip_x": 0.01,
+        "rotational_clip_y": 0.01,
+        "rotational_clip_z": 0.01,
+        "rotational_clip_neg_x": 0.01,
+        "rotational_clip_neg_y": 0.01,
+        "rotational_clip_neg_z": 0.01,
         "rotational_Ki": 0,
     }
     PRECISION_PARAM = {
@@ -132,7 +136,7 @@ class TrainConfig(DefaultTrainingConfig):
                 prediction = sigmoid(classifier(obs))
                 print("Predict: ", prediction)
                 # added check for z position to further robustify classifier, but should work without as well
-                success = int((prediction > 0.8).item())
+                success = int((prediction > 0.95).item())
                 # if success:
                 #     input("Success")
                 return success
