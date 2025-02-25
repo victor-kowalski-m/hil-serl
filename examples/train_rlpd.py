@@ -254,8 +254,8 @@ def learner(rng, agent, replay_buffer, demo_buffer, wandb_logger=None):
     start_step = (
         int(
             os.path.basename(
-                checkpoints.latest_checkpoint(os.path.abspath(FLAGS.checkpoint_path))
-            )[11:]
+                checkpoints.latest_checkpoint(os.path.abspath(FLAGS.checkpoint_path), "")
+            )[11:] or 0
         )
         + 1
         if FLAGS.checkpoint_path and os.path.exists(FLAGS.checkpoint_path)
@@ -436,7 +436,7 @@ def main(_):
         )
         agent = agent.replace(state=ckpt)
         ckpt_number = os.path.basename(
-            checkpoints.latest_checkpoint(os.path.abspath(FLAGS.checkpoint_path))
+            checkpoints.latest_checkpoint(os.path.abspath(FLAGS.checkpoint_path), "")
         )[11:]
         print_green(f"Loaded previous checkpoint at step {ckpt_number}.")
 
