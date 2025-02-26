@@ -11,11 +11,11 @@
             "args": [
                 "$@",
                 "--exp_name",
-                "usb_pickup_insertion",
-                "--checkpoint_path=../../experiments/usb_pickup_insertion/debug",
+                "ram_insertion",
+                "--checkpoint_path=../../experiments/ram_insertion/first_run",
                 "--actor"
             ],
-            "cwd": "examples/experiments/usb_pickup_insertion" ,
+            "cwd": "examples/experiments/ram_insertion" ,
             "console": "integratedTerminal",
             "env": {
                 "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
