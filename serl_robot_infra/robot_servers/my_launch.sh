@@ -9,7 +9,7 @@ python franka_server.py \
     --robot_ip=172.16.1.2 \
     --gripper_type=Franka \
     --reset_joint_target=0,0,0,-1.9,-0,2,0 \
-    --flask_url=127.0.0.1 \
+    --flask_url=0.0.0.0 \ # 127.0.0.1 \
     --ros_port=11311
     
 # curl -X POST 127.0.0.1:5000/activate_gripper
