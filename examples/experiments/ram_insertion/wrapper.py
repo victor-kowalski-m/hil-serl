@@ -11,7 +11,7 @@ from franka_env.envs.franka_env import FrankaEnv
 class RAMEnv(FrankaEnv):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.should_regrasp = True
+        self.should_regrasp = False
 
         def on_press(key):
             if str(key) == "Key.f1":

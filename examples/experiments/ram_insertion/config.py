@@ -33,7 +33,7 @@ class EnvConfig(DefaultEnvConfig):
         "wrist_1": lambda img: img[:, 315:1035],
         "wrist_2": lambda img: img[:, 80:-80],
         # "side": lambda img: img[400:480, 585:665]
-        "side": lambda img: img[150:315, 190:355]
+        "side": lambda img: img[130:295, 195:360]
     }
     GENERIC_CAMERAS = {
         #"side": {"id_name": "usb-Microsoft_Azure_Kinect_4K_Camera_000471215012-video-index0"},
@@ -41,13 +41,15 @@ class EnvConfig(DefaultEnvConfig):
         "wrist_2": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     TARGET_POSE = np.array(
-        [0.48743032062790537,0.22067800416581693,0.06040979312278208,np.pi,0.0026128038950117283,1.654021177685403]
+        # [0.5043032062790537,0.22067800416581693,0.06040979312278208,np.pi,0.0026128038950117283,1.654021177685403]
+        [0.5182235085854079,0.2222460209702428,0.05398205916057833,3.1274352708115893,-0.03494565023050589,1.559986419080218]
         # [0.4881879113354628,0.2208223800177667,0.05731334740852401, np.pi, 0, np.pi/2]
     )
     GRASP_POSE = np.array(
         # [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, np.pi/2]
-        # [0.6797256032879704,0.145140473338448678,0.060789280023034964, np.pi, 0, np.pi/2]
-        [0.6797256032879704,0.135140473338448678,0.055789280023034964, np.pi, 0, np.pi/2]
+        # [0.6797256032879704,0.148140473338448678,0.060789280023034964, np.pi, 0, np.pi/2] # good one
+        # [0.6797256032879704,0.135140473338448678,0.055789280023034964, np.pi, 0, np.pi/2]
+        [0.5182235085854079,0.2222460209702428,0.08398205916057833,3.1274352708115893,-0.03494565023050589,1.559986419080218]
     )
     RESET_POSE = TARGET_POSE + np.array([0, 0, 0.03, 0, 0.0, 0])
     ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.02, 0.02, 0.01, np.pi/12, np.pi/12, np.pi/12])
@@ -59,23 +61,23 @@ class EnvConfig(DefaultEnvConfig):
     DISPLAY_IMAGE = True
     MAX_EPISODE_LENGTH = 100
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 2000,
+        "translational_stiffness": 1500,
         "translational_damping": 89,
-        "rotational_stiffness": 150,
+        "rotational_stiffness": 120,
         "rotational_damping": 7,
         "translational_Ki": 0,
-        "translational_clip_x": 0.0025,
-        "translational_clip_y": 0.0025,
+        "translational_clip_x": 0.005,
+        "translational_clip_y": 0.005,
         "translational_clip_z": 0.0075,
-        "translational_clip_neg_x": 0.0025,
-        "translational_clip_neg_y": 0.0025,
+        "translational_clip_neg_x": 0.005,
+        "translational_clip_neg_y": 0.005,
         "translational_clip_neg_z": 0.005,
-        "rotational_clip_x": 0.01,
-        "rotational_clip_y": 0.01,
-        "rotational_clip_z": 0.01,
-        "rotational_clip_neg_x": 0.01,
-        "rotational_clip_neg_y": 0.01,
-        "rotational_clip_neg_z": 0.01,
+        "rotational_clip_x": 0.025,
+        "rotational_clip_y": 0.025,
+        "rotational_clip_z": 0.025,
+        "rotational_clip_neg_x": 0.025,
+        "rotational_clip_neg_y": 0.025,
+        "rotational_clip_neg_z": 0.025,
         "rotational_Ki": 0,
     }
     PRECISION_PARAM = {
