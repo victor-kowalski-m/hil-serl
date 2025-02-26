@@ -37,11 +37,19 @@ class ImageDisplayer(threading.Thread):
                 break
             
 
+            # frame = np.concatenate(
+            #     [
+            #         cv2.resize(v, (512, 512))
+            #         for k, v in img_array.items()
+            #         if "full" not in k
+            #     ],
+            #     axis=1,
+            # )
             frame = np.concatenate(
-                [
-                    cv2.resize(v, (512, 512))
-                    for k, v in img_array.items()
-                    if "full" not in k
+                [   
+                    cv2.resize(img_array["wrist_1"], (512, 512)),
+                    cv2.resize(img_array["wrist_2"], (512, 512)),
+                    cv2.resize(img_array["side"], (512, 512))
                 ],
                 axis=1,
             )
@@ -497,6 +505,7 @@ class FrankaEnv(gym.Env):
 
     def _send_gripper_command(self, pos: float, mode="binary", force=False):
         """Internal function to send gripper command to the robot."""
+        return
         if mode == "binary":
             if (
                 (pos <= -0.5)
