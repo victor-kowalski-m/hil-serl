@@ -267,6 +267,14 @@ class FrankaEnv(gym.Env):
 
         self._update_currpos()
         ob = self._get_obs()
+
+        # DEBUG CAM DELAY/LAG
+        # print(ob["state"]["tcp_pose"][2])
+        # if ob["state"]["tcp_pose"][2] < 0.05:
+        #     filename = '/home/vkowalskimartins/Desktop/savedImage.jpg'
+        #     cv2.imwrite(filename, ob["images"]["side"])
+        #     print()
+
         reward = self.compute_reward(ob)
         done = (
             self.curr_path_length >= self.max_episode_length or reward or self.terminate
@@ -479,9 +487,9 @@ class FrankaEnv(gym.Env):
             else:
                 name = val["name"]
             print(f"NAME::::: {name}")
-            cap = CVVideoCapture(name)
-            if not cap.isOpened():
-                raise RuntimeError(f"Could not open camera {name}")
+            cap = VideoCapture(CVVideoCapture(name), "side")
+            # if not cap.isOpened():
+            #     raise RuntimeError(f"Could not open camera {name}")
             self.cap[cam_name] = cap
 
     def close_cameras(self):
