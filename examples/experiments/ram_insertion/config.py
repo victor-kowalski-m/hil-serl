@@ -28,17 +28,21 @@ class EnvConfig(DefaultEnvConfig):
             "dim": (1280, 720),
             "exposure": 10500,
         },
+        "wrist_2": {
+            "serial_number": "313522071070",
+            "dim": (1280, 720),
+            "exposure": 10500,
+        },
     }
     IMAGE_CROP = {
-        "wrist_1": lambda img: img[:, 315:1035],
-        "wrist_2": lambda img: img[:, 80:-80],
-        # "side": lambda img: img[400:480, 585:665]
-        "side": lambda img: img[130:295, 195:360]
+        "wrist_1": lambda img: img[:, 365:1085],
+        "wrist_2": lambda img: img[:, 365:1085],
+        "side": lambda img: img[160:325, 205:370]
     }
     GENERIC_CAMERAS = {
         #"side": {"id_name": "usb-Microsoft_Azure_Kinect_4K_Camera_000471215012-video-index0"},
         "side": {"id_name": "usb-USB2.0_Camera_USB2.0_Camera-video-index0"},
-        "wrist_2": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
+        # "side": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     TARGET_POSE = np.array(
         # [0.5043032062790537,0.22067800416581693,0.06040979312278208,np.pi,0.0026128038950117283,1.654021177685403]
