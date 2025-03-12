@@ -61,13 +61,13 @@ class EnvConfig(DefaultEnvConfig):
     RANDOM_RESET = True
     RANDOM_XY_RANGE = 0.02
     RANDOM_RZ_RANGE = 0.1
-    ACTION_SCALE = np.array([0.1, 0.2, 0])
+    ACTION_SCALE = np.array([0.01, 0.06, 0])
     DISPLAY_IMAGE = True
     MAX_EPISODE_LENGTH = 100
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 1500,
+        "translational_stiffness": 1000,
         "translational_damping": 89,
-        "rotational_stiffness": 120,
+        "rotational_stiffness": 90,
         "rotational_damping": 7,
         "translational_Ki": 0,
         "translational_clip_x": 0.005,

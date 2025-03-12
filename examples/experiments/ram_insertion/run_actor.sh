@@ -4,4 +4,8 @@ python ../../train_rlpd.py "$@" \
     --exp_name=ram_insertion \
     --checkpoint_path=first_run \
     --actor \
-    # --ip=eda01
+    --ip=pc81-182 \
+    # for eval vvv
+    --eval_checkpoint_step=15000 \ 
+    --eval_n_trajs=20 
+
