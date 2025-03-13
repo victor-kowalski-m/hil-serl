@@ -60,6 +60,18 @@
             ],
             // "cwd": "examples",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "debug resistor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--exp_name",
+                "resistor_insertion",
+            ],
+            // "cwd": "examples",
+            "console": "integratedTerminal"
         }
     ]
 }

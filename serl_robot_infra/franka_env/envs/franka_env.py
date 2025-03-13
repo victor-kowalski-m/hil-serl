@@ -513,7 +513,7 @@ class FrankaEnv(gym.Env):
 
     def _send_gripper_command(self, pos: float, mode="binary", force=False):
         """Internal function to send gripper command to the robot."""
-        return
+        # return
         if mode == "binary":
             if (
                 (pos <= -0.5)
