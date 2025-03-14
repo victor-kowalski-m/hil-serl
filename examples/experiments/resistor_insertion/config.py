@@ -7,7 +7,6 @@ from franka_env.envs.wrappers import (
     Quat2EulerWrapper,
     SpacemouseIntervention,
     MultiCameraBinaryRewardClassifierWrapper,
-    GripperCloseEnv,
 )
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.franka_env import DefaultEnvConfig
@@ -16,7 +15,7 @@ from serl_launcher.wrappers.chunking import ChunkingWrapper
 from serl_launcher.networks.reward_classifier import load_classifier_func
 
 from experiments.config import DefaultTrainingConfig
-from experiments.resistor_insertion.wrapper import ResistorEnv
+from experiments.resistor_insertion.wrapper import ResistorEnv, GripperPenaltyWrapper
 
 
 class EnvConfig(DefaultEnvConfig):
@@ -56,12 +55,12 @@ class EnvConfig(DefaultEnvConfig):
         [0.6082500302779233,0.15106681669594402,0.02541610749323761,np.pi, 0,0]
     )
     RESET_POSE = TARGET_POSE + np.array([0, 0, 0.02, 0, 0.0, 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.1, 0.1, 0.03, np.pi/12, np.pi/12, np.pi/12])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.1, 0.1, 0.03, np.pi/12, np.pi/12, np.pi/12])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.04, 0.02, 0.03, np.pi/12, np.pi/12, np.pi/12])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.04, 0.02, 0.03, np.pi/12, np.pi/12, np.pi/12])
     RANDOM_RESET = True
     RANDOM_XY_RANGE = 0.02
     RANDOM_RZ_RANGE = 0.1
-    ACTION_SCALE = np.array([0.05, 0.1, 1])
+    ACTION_SCALE = np.array([0.025, 0.1, 1])
     DISPLAY_IMAGE = True
     MAX_EPISODE_LENGTH = 200
     COMPLIANCE_PARAM = {
@@ -109,12 +108,12 @@ class EnvConfig(DefaultEnvConfig):
 class TrainConfig(DefaultTrainingConfig):
     image_keys = ["wrist_1", "wrist_2", "side"]
     classifier_keys = ["wrist_1", "wrist_2", "side"]
-    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque"] #, "gripper_pose"]
+    proprio_keys = ["tcp_pose", "tcp_vel", "tcp_force", "tcp_torque", "gripper_pose"]
     buffer_period = 1000
     checkpoint_period = 5000
     steps_per_update = 50
     encoder_type = "resnet-pretrained"
-    setup_mode = "single-arm-fixed-gripper"
+    setup_mode = "single-arm-learned-gripper"
 
     def get_environment(self, fake_env=False, save_video=False, classifier=False):
         env = ResistorEnv(
@@ -122,7 +121,6 @@ class TrainConfig(DefaultTrainingConfig):
             save_video=save_video,
             config=EnvConfig(),
         )
-        # env = GripperCloseEnv(env)
         if not fake_env:
             env = SpacemouseIntervention(env)
         env = RelativeFrame(env)
@@ -148,4 +146,5 @@ class TrainConfig(DefaultTrainingConfig):
                 return success
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
+        env = GripperPenaltyWrapper(env, penalty=-0.02)
         return env

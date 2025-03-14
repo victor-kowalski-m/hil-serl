@@ -1,4 +1,5 @@
 first_run/
+classifier_ckpt/
 
 *.pkl
 

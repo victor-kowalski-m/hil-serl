@@ -515,27 +515,37 @@ class FrankaEnv(gym.Env):
         """Internal function to send gripper command to the robot."""
         # return
         if mode == "binary":
-            if (
-                (pos <= -0.5)
-                and (self.curr_gripper_pos > 0.05)
-                and (
-                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
-                )
-            ):  # close gripper
+            # if (
+            #     (pos <= -0.5)
+            #     and (self.curr_gripper_pos > 0.05)
+            #     and (
+            #         (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+            #     )
+            # ):  # close gripper
+            #     requests.post(self.url + "close_gripper")
+            #     self.last_gripper_act = time.time()
+            #     time.sleep(self.gripper_sleep)
+            # elif (
+            #     (pos >= 0.5)
+            #     and (self.curr_gripper_pos < 0.45)
+            #     and (
+            #         (time.time() - self.last_gripper_act > self.gripper_sleep) or force
+            #     )
+            # ):  # open gripper
+            #     requests.post(self.url + "open_gripper")
+            #     self.last_gripper_act = time.time()
+            #     time.sleep(self.gripper_sleep)
+            # else:
+            #     return
+            if (pos <= -0.5) and (self.curr_gripper_pos > 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # close gripper
                 requests.post(self.url + "close_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            elif (
-                (pos >= 0.5)
-                and (self.curr_gripper_pos < 0.45)
-                and (
-                    (time.time() - self.last_gripper_act > self.gripper_sleep) or force
-                )
-            ):  # open gripper
+            elif (pos >= 0.5) and (self.curr_gripper_pos < 0.85) and (time.time() - self.last_gripper_act > self.gripper_sleep):  # open gripper
                 requests.post(self.url + "open_gripper")
                 self.last_gripper_act = time.time()
                 time.sleep(self.gripper_sleep)
-            else:
+            else: 
                 return
         elif mode == "continuous":
             raise NotImplementedError("Continuous gripper control is optional")
