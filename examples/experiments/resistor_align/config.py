@@ -16,7 +16,7 @@ from serl_launcher.wrappers.chunking import ChunkingWrapper
 from serl_launcher.networks.reward_classifier import load_classifier_func
 
 from experiments.config import DefaultTrainingConfig
-from experiments.resistor_insertion.wrapper import ResistorEnv, GripperPenaltyWrapper
+from experiments.resistor_align.wrapper import ResistorEnv, GripperPenaltyWrapper
 
 
 class EnvConfig(DefaultEnvConfig):
@@ -51,12 +51,12 @@ class EnvConfig(DefaultEnvConfig):
         [0.6082500302779233,0.15106681669594402,0.02541610749323761,np.pi, 0,0]
     )
     RESET_POSE = TARGET_POSE + np.array([0, 0, 0.02, 0, 0.0, 0]) - np.array([0, 0, 0.00, 0, TARGET_POSE[-2], 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/12, np.pi/12])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/12, np.pi/12])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/9, np.pi/12])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/9, np.pi/12])
     RANDOM_RESET = True
     RANDOM_XY_RANGE = 0.02
     RANDOM_RZ_RANGE = 0.1
-    ACTION_SCALE = np.array([0.01, 0.06, 1])
+    ACTION_SCALE = np.array([0.015, 0.1, 1])
     DISPLAY_IMAGE = True
     MAX_EPISODE_LENGTH = 120
     COMPLIANCE_PARAM = {
@@ -108,8 +108,10 @@ class TrainConfig(DefaultTrainingConfig):
     buffer_period = 1000
     checkpoint_period = 5000
     steps_per_update = 50
+    discount = 0.98
     encoder_type = "resnet-pretrained"
     setup_mode = "single-arm-fixed-gripper"
+    consecutive_positives = 0
 
     def get_environment(self, fake_env=False, save_video=False, classifier=False):
         env = ResistorEnv(
@@ -136,11 +138,11 @@ class TrainConfig(DefaultTrainingConfig):
                 sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
                 prediction = sigmoid(classifier(obs))
                 print("Predict: ", prediction)
-                # added check for z position to further robustify classifier, but should work without as well
-                success = int((prediction > 0.95).item())
-                # if success:
-                #     input("Success")
-                return success
+                TrainConfig.consecutive_positives += int((prediction > 0.97).item())
+                if TrainConfig.consecutive_positives >= 3:
+                    TrainConfig.consecutive_positives = 0
+                    return 1
+                return 0
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
         return env
