@@ -72,6 +72,19 @@
             ],
             // "cwd": "examples",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "debug align resistor",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--exp_name",
+                "resistor_align",
+            ],
+            // "cwd": "examples",
+            "console": "integratedTerminal"
         }
+
     ]
 }

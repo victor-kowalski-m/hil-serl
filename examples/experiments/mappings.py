@@ -1,5 +1,6 @@
 from experiments.ram_insertion.config import TrainConfig as RAMInsertionTrainConfig
 from experiments.resistor_insertion.config import TrainConfig as ResistorInsertionTrainConfig
+from experiments.resistor_align.config import TrainConfig as ResistorAlignTrainConfig
 from experiments.usb_pickup_insertion.config import (
     TrainConfig as USBPickupInsertionTrainConfig,
 )
@@ -11,6 +12,7 @@ from experiments.pcb_insertion.config import TrainConfig as PCBInsertionTrainCon
 CONFIG_MAPPING = {
     "ram_insertion": RAMInsertionTrainConfig,
     "resistor_insertion": ResistorInsertionTrainConfig,
+    "resistor_align": ResistorAlignTrainConfig,
     "usb_pickup_insertion": USBPickupInsertionTrainConfig,
     "object_handover": ObjectHandoverTrainConfig,
     "egg_flip": EggFlipTrainConfig,
