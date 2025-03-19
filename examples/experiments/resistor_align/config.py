@@ -131,7 +131,7 @@ class TrainConfig(DefaultTrainingConfig):
                 key=jax.random.PRNGKey(0),
                 sample=env.observation_space.sample(),
                 image_keys=self.classifier_keys,
-                checkpoint_path=os.path.abspath("classifier_ckpt/"),
+                checkpoint_path=os.path.abspath("/home/vkowalskimartins/hil-serl/examples/experiments/resistor_align/classifier_ckpt/"),
             )
 
             def reward_func(obs):

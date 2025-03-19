@@ -13,12 +13,12 @@ class ResistorEnv(FrankaEnv):
         super().__init__(**kwargs)
         self.should_regrasp = True
 
-        def on_press(key):
-            if str(key) == "Key.f1":
-                self.should_regrasp = True
+        # def on_press(key):
+        #     if str(key) == "Key.f1":
+        #         self.should_regrasp = True
 
-        listener = keyboard.Listener(on_press=on_press)
-        listener.start()
+        # listener = keyboard.Listener(on_press=on_press)
+        # listener.start()
 
     def go_to_reset(self, joint_reset=False):
         """
@@ -64,27 +64,7 @@ class ResistorEnv(FrankaEnv):
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
 
     def regrasp(self):
-        # use compliance mode for coupled reset
-        self._update_currpos()
-        self._send_pos_command(self.currpos)
-        time.sleep(0.3)
-        requests.post(self.url + "update_param", json=self.config.PRECISION_PARAM)
-
-        # pull up
-        self._update_currpos()
-        # reset_pose = copy.deepcopy(self.currpos)
-        # reset_pose[2] = self.resetpos[2] + 0.04
-        # self.interpolate_move(reset_pose, timeout=1)
-
-        # input("Press enter to release gripper...")
-        time.sleep(0.5)
-        self._send_gripper_command(1.0)
-        time.sleep(1.0)
-        # input("Place RAM in holder and press enter to grasp...")
-        reset_pose = copy.deepcopy(self.currpos)
-        reset_pose[2] = self.resetpos[2] + 0.05
-        self.interpolate_move(reset_pose, timeout=1)
-        time.sleep(2)
+        
         top_pose = self.config.GRASP_POSE.copy()
         top_pose[2] += 0.05
         # top_pose[0] += np.random.uniform(-0.005, 0.005)
@@ -110,6 +90,28 @@ class ResistorEnv(FrankaEnv):
         self.last_gripper_act = time.time()
         if self.save_video:
             self.save_video_recording()
+
+        # use compliance mode for coupled reset
+        self._update_currpos()
+        self._send_pos_command(self.currpos)
+        time.sleep(0.3)
+        requests.post(self.url + "update_param", json=self.config.PRECISION_PARAM)
+
+        # pull up
+        self._update_currpos()
+        # reset_pose = copy.deepcopy(self.currpos)
+        # reset_pose[2] = self.resetpos[2] + 0.04
+        # self.interpolate_move(reset_pose, timeout=1)
+
+        # input("Press enter to release gripper...")
+        time.sleep(0.5)
+        self._send_gripper_command(1.0)
+        time.sleep(1.0)
+        # input("Place RAM in holder and press enter to grasp...")
+        reset_pose = copy.deepcopy(self.currpos)
+        reset_pose[2] = self.resetpos[2] + 0.05
+        self.interpolate_move(reset_pose, timeout=1)
+        time.sleep(1)
 
         # if True:
         if self.should_regrasp:
