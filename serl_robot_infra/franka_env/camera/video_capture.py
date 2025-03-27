@@ -33,4 +33,11 @@ class VideoCapture:
     def close(self):
         self.enable = False
         self.t.join()
-        self.cap.close()
+        try:
+            self.cap.close()
+        except Exception as e:
+            print(e)
+        try:
+            self.cap.release()
+        except Exception as e:
+            print(e)

@@ -13,7 +13,7 @@ import copy
 import pickle as pkl
 from gymnasium.wrappers.record_episode_statistics import RecordEpisodeStatistics
 from natsort import natsorted
-
+import sys
 from serl_launcher.agents.continuous.sac import SACAgent
 from serl_launcher.agents.continuous.sac_hybrid_single import SACAgentHybridSingleArm
 from serl_launcher.agents.continuous.sac_hybrid_dual import SACAgentHybridDualArm
@@ -98,6 +98,9 @@ def actor(agent, data_store, intvn_data_store, env, sampling_rng):
                         dt = time.time() - start_time
                         time_list.append(dt)
                         print(dt)
+                        # if episode == FLAGS.eval_n_trajs - 1:
+                        #     env.define_should_regrasp(False)
+                        #     env.reset()
 
                     success_counter += reward
                     print(reward)
@@ -384,6 +387,7 @@ def main(_):
         save_video=FLAGS.save_video,
         classifier=True,
     )
+    
     env = RecordEpisodeStatistics(env)
 
     rng, sampling_rng = jax.random.split(rng)
@@ -429,7 +433,7 @@ def main(_):
     agent = jax.device_put(jax.tree_map(jnp.array, agent), sharding.replicate())
 
     if FLAGS.checkpoint_path is not None and os.path.exists(FLAGS.checkpoint_path):
-        input("Checkpoint path already exists. Press Enter to resume training.")
+        # input("Checkpoint path already exists. Press Enter to resume training.")
         ckpt = checkpoints.restore_checkpoint(
             os.path.abspath(FLAGS.checkpoint_path),
             agent.state,
@@ -533,6 +537,8 @@ def main(_):
 
     else:
         raise NotImplementedError("Must be either a learner or an actor")
+    
+    env.close()
 
 
 if __name__ == "__main__":

@@ -1,3 +1,6 @@
+first_run/
+classifier_ckpt/
+
 *.pkl
 first_run/
 classifier_ckpt/

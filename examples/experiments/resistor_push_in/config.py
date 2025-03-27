@@ -16,12 +16,12 @@ from serl_launcher.wrappers.chunking import ChunkingWrapper
 from serl_launcher.networks.reward_classifier import load_classifier_func
 
 from experiments.config import DefaultTrainingConfig
-from experiments.ram_insertion.wrapper import RAMEnv
+from experiments.resistor_push_in.wrapper import ResistorEnv, GripperPenaltyWrapper
 
 
 class EnvConfig(DefaultEnvConfig):
     # SERVER_URL = "http://127.0.0.1:5000/"
-    SERVER_URL = "http://ictpc011:5000/"
+    SERVER_URL = "http://0.0.0.0:5000/"
     REALSENSE_CAMERAS = {
         "wrist_1": {
             "serial_number": "241122072130",
@@ -37,7 +37,7 @@ class EnvConfig(DefaultEnvConfig):
     IMAGE_CROP = {
         "wrist_1": lambda img: img[:, 365:1085],
         "wrist_2": lambda img: img[:, 365:1085],
-        "side": lambda img: img[160:325, 205:370]
+        "side": lambda img: img[160:325, 105:270]
     }
     GENERIC_CAMERAS = {
         #"side": {"id_name": "usb-Microsoft_Azure_Kinect_4K_Camera_000471215012-video-index0"},
@@ -45,29 +45,24 @@ class EnvConfig(DefaultEnvConfig):
         # "side": {"id_name": "usb-046d_HD_Pro_Webcam_C920-video-index0"},
     }
     TARGET_POSE = np.array(
-        # [0.5043032062790537,0.22067800416581693,0.06040979312278208,np.pi,0.0026128038950117283,1.654021177685403]
-        [0.5182235085854079,0.2222460209702428,0.05398205916057833,3.1274352708115893,-0.03494565023050589,1.559986419080218]
-        # [0.4881879113354628,0.2208223800177667,0.05731334740852401, np.pi, 0, np.pi/2]
+        [0.6353334328493216,0.2215151405516971,0.044434810629231464,np.pi,0.16381852503561567,0]
     )
-    GRASP_POSE = np.array(
-        # [0.634300840464846,0.17992817965194208,0.06180436925694141, np.pi, 0, np.pi/2]
-        # [0.6797256032879704,0.148140473338448678,0.060789280023034964, np.pi, 0, np.pi/2] # good one
-        # [0.6797256032879704,0.135140473338448678,0.055789280023034964, np.pi, 0, np.pi/2]
-        [0.5182235085854079,0.2222460209702428,0.08398205916057833,3.1274352708115893,-0.03494565023050589,1.559986419080218]
-    )
-    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.03, 0, 0.0, 0])
-    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.02, 0.02, 0.01, np.pi/12, np.pi/12, np.pi/12])
-    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.02, 0.02, 0.04, np.pi/12, np.pi/12, np.pi/12])
+    # GRASP_POSE = np.array(
+    #     [0.6082500302779233,0.15106681669594402,0.02541610749323761,np.pi, 0,0]
+    # )
+    RESET_POSE = TARGET_POSE + np.array([0, 0, 0.04, 0, 0.0, 0]) - np.array([0, 0, 0.00, 0, TARGET_POSE[-2], 0])
+    ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.02, 0.01, np.pi/36, np.pi/9, np.pi/12])
+    ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.02, 0.04, np.pi/36, np.pi/9, np.pi/12])
     RANDOM_RESET = True
-    RANDOM_XY_RANGE = 0.02
-    RANDOM_RZ_RANGE = 0.1
-    ACTION_SCALE = np.array([0.01, 0.06, 0])
+    RANDOM_XY_RANGE = 0*0.02
+    RANDOM_RZ_RANGE = 0*0.1
+    ACTION_SCALE = np.array([0.015, 0.1, 1])
     DISPLAY_IMAGE = True
-    MAX_EPISODE_LENGTH = 100
+    MAX_EPISODE_LENGTH = 120
     COMPLIANCE_PARAM = {
-        "translational_stiffness": 1000,
+        "translational_stiffness": 1500,
         "translational_damping": 89,
-        "rotational_stiffness": 90,
+        "rotational_stiffness": 120,
         "rotational_damping": 7,
         "translational_Ki": 0,
         "translational_clip_x": 0.005,
@@ -75,7 +70,7 @@ class EnvConfig(DefaultEnvConfig):
         "translational_clip_z": 0.0075,
         "translational_clip_neg_x": 0.005,
         "translational_clip_neg_y": 0.005,
-        "translational_clip_neg_z": 0.005,
+        "translational_clip_neg_z": 0.0075,
         "rotational_clip_x": 0.025,
         "rotational_clip_y": 0.025,
         "rotational_clip_z": 0.025,
@@ -113,18 +108,21 @@ class TrainConfig(DefaultTrainingConfig):
     buffer_period = 1000
     checkpoint_period = 5000
     steps_per_update = 50
+    discount = 0.98
     encoder_type = "resnet-pretrained"
     setup_mode = "single-arm-fixed-gripper"
+    consecutive_positives = 0
 
-    def get_environment(self, fake_env=False, save_video=False, classifier=False):
-        env = RAMEnv(
+    def get_environment(self, fake_env=False, save_video=False, classifier=False, open_threads=True):
+        env = ResistorEnv(
             fake_env=fake_env,
             save_video=save_video,
             config=EnvConfig(),
+            open_threads=open_threads
         )
         env = GripperCloseEnv(env)
-        if not fake_env:
-            env = SpacemouseIntervention(env)
+        # if not fake_env:
+            # env = SpacemouseIntervention(env)
         env = RelativeFrame(env)
         env = Quat2EulerWrapper(env)
         env = SERLObsWrapper(env, proprio_keys=self.proprio_keys)
@@ -134,18 +132,18 @@ class TrainConfig(DefaultTrainingConfig):
                 key=jax.random.PRNGKey(0),
                 sample=env.observation_space.sample(),
                 image_keys=self.classifier_keys,
-                checkpoint_path=os.path.abspath("classifier_ckpt/"),
+                checkpoint_path=os.path.abspath("/home/vkowalskimartins/hil-serl/examples/experiments/resistor_push_in/classifier_ckpt/"),
             )
 
             def reward_func(obs):
                 sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
                 prediction = sigmoid(classifier(obs))
                 print("Predict: ", prediction)
-                # added check for z position to further robustify classifier, but should work without as well
-                success = int((prediction > 0.95).item())
-                # if success:
-                #     input("Success")
-                return success
+                TrainConfig.consecutive_positives += int((prediction > 0.95).item())
+                if TrainConfig.consecutive_positives >= 3:
+                    TrainConfig.consecutive_positives = 0
+                    return 1
+                return 0
 
             env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
         return env
