@@ -5,6 +5,6 @@ python ../../train_rlpd.py "$@" \
     --checkpoint_path=first_run \
     --actor \
     --ip=pc81-182 \
-    # --eval_checkpoint_step=10000 \
-    # --eval_n_trajs=20 
+    --eval_checkpoint_step=5000 \
+    --eval_n_trajs=1
 

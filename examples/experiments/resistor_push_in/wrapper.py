@@ -60,6 +60,9 @@ class ResistorEnv(FrankaEnv):
             self._send_pos_command(reset_pose)
         time.sleep(0.5)
 
+        requests.post(self.url + "close_gripper")
+        time.sleep(self.gripper_sleep)
+
         # Change to compliance mode
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
 
@@ -111,7 +114,8 @@ class ResistorEnv(FrankaEnv):
         if self.save_video:
             self.save_video_recording()
 
-        self._send_gripper_command(1.0)
+        requests.post(self.url + "open_gripper")
+        time.sleep(self.gripper_sleep)
         # if True:
         # if self.should_regrasp:
         #     self.regrasp()
@@ -128,7 +132,7 @@ class ResistorEnv(FrankaEnv):
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
         self.terminate = False
 
-        input("Ready?")
+        # input("Ready?")
 
         return obs, {}
 

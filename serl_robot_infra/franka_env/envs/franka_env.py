@@ -15,7 +15,7 @@ from datetime import datetime
 from collections import OrderedDict
 from typing import Dict
 from cv2 import VideoCapture as CVVideoCapture
-
+import datetime
 from franka_env.camera.video_capture import VideoCapture
 from franka_env.camera.rs_capture import RSCapture
 from franka_env.utils.rotations import euler_2_quat
@@ -25,15 +25,18 @@ class ImageDisplayer(threading.Thread):
     def __init__(self, queue, name):
         threading.Thread.__init__(self)
         self.queue = queue
-        self.daemon = True  # make this a daemon thread
+        self.daemon = False  # make this a daemon thread
         self.name = name
 
     def run(self):
         print("RUUUUUUUUUN")
 
+        cv2.namedWindow(self.name, cv2.WINDOW_NORMAL)
+
         while True:
             img_array = self.queue.get()  # retrieve an image from the queue
             if img_array is None:  # None is our signal to exit
+                print("No image! Breaking")
                 break
             
 
@@ -56,7 +59,8 @@ class ImageDisplayer(threading.Thread):
 
             cv2.imshow(self.name, frame) # img_array["side_full"])
             cv2.waitKey(1)
-
+        cv2.destroyWindow(self.name)
+        # cv2.waitKey(1)
 
 ##############################################################################
 
@@ -112,7 +116,9 @@ class FrankaEnv(gym.Env):
         save_video=False,
         config: DefaultEnvConfig = None,
         set_load=False,
+        open_threads=True
     ):
+        self.fake_env=fake_env
         self.action_scale = config.ACTION_SCALE
         self._TARGET_POSE = config.TARGET_POSE
         self._RESET_POSE = config.RESET_POSE
@@ -122,6 +128,7 @@ class FrankaEnv(gym.Env):
         self.max_episode_length = config.MAX_EPISODE_LENGTH
         self.display_image = config.DISPLAY_IMAGE
         self.gripper_sleep = config.GRIPPER_SLEEP
+        print(f"OPEN THREADS = {open_threads}")
 
         # convert last 3 elements from euler to quat, from size (6,) to (7,)
         self.resetpos = np.concatenate(
@@ -188,12 +195,9 @@ class FrankaEnv(gym.Env):
             return
 
         self.cap = None
-        self.init_realsense_cameras(config.REALSENSE_CAMERAS)
-        self.init_generic_cameras(config.GENERIC_CAMERAS)
-        if self.display_image:
-            self.img_queue = queue.Queue()
-            self.displayer = ImageDisplayer(self.img_queue, self.url)
-            self.displayer.start()
+        if open_threads:
+            self.open_threads()
+
 
         if set_load:
             input("Put arm into programing mode and press enter.")
@@ -203,7 +207,19 @@ class FrankaEnv(gym.Env):
                 self._recover()
                 time.sleep(1)
 
-        if not fake_env:
+    
+    def open_threads(self):
+        self.init_realsense_cameras(self.config.REALSENSE_CAMERAS)
+        self.init_generic_cameras(self.config.GENERIC_CAMERAS)
+        self.start_listener()
+        self.display_image = False
+        if self.display_image:
+            self.img_queue = queue.Queue()
+            self.displayer = ImageDisplayer(self.img_queue, datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+            self.displayer.start()
+
+    def start_listener(self):
+        if not self.fake_env:
             from pynput import keyboard
 
             self.terminate = False
@@ -335,6 +351,8 @@ class FrankaEnv(gym.Env):
 
         if self.display_image:
             self.img_queue.put(display_images)
+        # images["wrist_1"] = images["side"]
+        # images["wrist_2"] = images["side"]
         return images
 
     def interpolate_move(self, goal: np.ndarray, timeout: float):
@@ -461,6 +479,7 @@ class FrankaEnv(gym.Env):
             self.close_cameras()
 
         self.cap = OrderedDict()
+        # return
         for cam_name, kwargs in name_serial_dict.items():
             cap = VideoCapture(RSCapture(name=cam_name, **kwargs))
             self.cap[cam_name] = cap
@@ -497,6 +516,7 @@ class FrankaEnv(gym.Env):
         try:
             for cap in self.cap.values():
                 cap.close()
+                del cap
         except Exception as e:
             print(f"Failed to close cameras: {e}")
 
@@ -601,5 +621,9 @@ class FrankaEnv(gym.Env):
         self.close_cameras()
         if self.display_image:
             self.img_queue.put(None)
-            cv2.destroyAllWindows()
+            # cv2.destroyAllWindows()
             self.displayer.join()
+
+    def define_should_regrasp(self, boolean):
+        self.should_regrasp = boolean
+        

@@ -35,7 +35,23 @@
                 "--eval_checkpoint_step",
                 "5000",
                 "--eval_n_trajs",
-                "1"
+                "10"
+            ],
+            "console": "integratedTerminal",
+            "env": {
+                "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
+                "XLA_PYTHON_CLIENT_MEM_FRACTION": ".1"
+            },
+        },
+        {   "name": "debug resistor align reset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "$@",
+                "--exp_name",
+                "resistor_align",
+                "--reset"
             ],
             "console": "integratedTerminal",
             "env": {
@@ -125,11 +141,11 @@
             "args": [
                 "$@",
                 "--exp_names",
-                "resistor_align,resistor_push_in",
+                "resistor_align",
                 "--checkpoint_paths",
-                "examples/experiments/resistor_align/first_run,examples/experiments/resistor_push_in/first_run ",
+                "examples/experiments/resistor_align/first_run",
                 "--eval_checkpoint_steps",
-                "5000,10000",
+                "5000",
                 "--eval_n_trajs",
                 "10"
             ],
@@ -139,6 +155,26 @@
                 "XLA_PYTHON_CLIENT_MEM_FRACTION": ".1"
             },
         },
-
+        // {   "name": "debug multi_actor",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "program": "${file}",
+        //     "args": [
+        //         "$@",
+        //         "--exp_names",
+        //         "resistor_align,resistor_push_in",
+        //         "--checkpoint_paths",
+        //         "examples/experiments/resistor_align/first_run,examples/experiments/resistor_push_in/first_run ",
+        //         "--eval_checkpoint_steps",
+        //         "5000,5000",
+        //         "--eval_n_trajs",
+        //         "10"
+        //     ],
+        //     "console": "integratedTerminal",
+        //     "env": {
+        //         "XLA_PYTHON_CLIENT_PREALLOCATE": "false",
+        //         "XLA_PYTHON_CLIENT_MEM_FRACTION": ".1"
+        //     },
+        // },
     ]
 }

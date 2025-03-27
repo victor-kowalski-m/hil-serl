@@ -54,8 +54,8 @@ class EnvConfig(DefaultEnvConfig):
     ABS_POSE_LIMIT_LOW = TARGET_POSE - np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/9, np.pi/12])
     ABS_POSE_LIMIT_HIGH = TARGET_POSE + np.array([0.03, 0.02, 0.02, np.pi/36, np.pi/9, np.pi/12])
     RANDOM_RESET = True
-    RANDOM_XY_RANGE = 0.02
-    RANDOM_RZ_RANGE = 0.1
+    RANDOM_XY_RANGE = 0*0.02
+    RANDOM_RZ_RANGE = 0*0.1
     ACTION_SCALE = np.array([0.015, 0.1, 1])
     DISPLAY_IMAGE = True
     MAX_EPISODE_LENGTH = 120
@@ -113,15 +113,16 @@ class TrainConfig(DefaultTrainingConfig):
     setup_mode = "single-arm-fixed-gripper"
     consecutive_positives = 0
 
-    def get_environment(self, fake_env=False, save_video=False, classifier=False):
+    def get_environment(self, fake_env=False, save_video=False, classifier=False, open_threads=True):
         env = ResistorEnv(
             fake_env=fake_env,
             save_video=save_video,
             config=EnvConfig(),
+            open_threads=open_threads
         )
         env = GripperCloseEnv(env)
-        if not fake_env:
-            env = SpacemouseIntervention(env)
+        # if not fake_env:
+        #     env = SpacemouseIntervention(env)
         env = RelativeFrame(env)
         env = Quat2EulerWrapper(env)
         env = SERLObsWrapper(env, proprio_keys=self.proprio_keys)

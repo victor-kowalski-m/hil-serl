@@ -40,7 +40,6 @@ flags.DEFINE_string("exp_name", None, "Name of experiment corresponding to folde
 flags.DEFINE_integer("seed", 42, "Random seed.")
 flags.DEFINE_boolean("learner", False, "Whether this is a learner.")
 flags.DEFINE_boolean("actor", False, "Whether this is an actor.")
-flags.DEFINE_boolean("reset", False, "Whether this is a reset.")
 flags.DEFINE_string("ip", "localhost", "IP address of the learner.")
 flags.DEFINE_multi_string("demo_path", None, "Path to the demo data.")
 flags.DEFINE_string("checkpoint_path", None, "Path to save checkpoints.")
@@ -99,6 +98,9 @@ def actor(agent, data_store, intvn_data_store, env, sampling_rng):
                         dt = time.time() - start_time
                         time_list.append(dt)
                         print(dt)
+                        # if episode == FLAGS.eval_n_trajs - 1:
+                        #     env.define_should_regrasp(False)
+                        #     env.reset()
 
                     success_counter += reward
                     print(reward)
@@ -385,11 +387,6 @@ def main(_):
         save_video=FLAGS.save_video,
         classifier=True,
     )
-    if FLAGS.reset:
-        env.should_regrasp = False
-        env.reset()
-        env.close()
-        sys.exit()
     
     env = RecordEpisodeStatistics(env)
 
