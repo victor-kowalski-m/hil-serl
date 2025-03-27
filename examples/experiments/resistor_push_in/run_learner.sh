@@ -3,5 +3,5 @@ export XLA_PYTHON_CLIENT_MEM_FRACTION=.3 && \
 python ../../train_rlpd.py "$@" \
     --exp_name=ram_insertion \
     --checkpoint_path=first_run \
-    --demo_path=/home/vkowalskimartins/hil-serl/examples/experiments/ram_insertion/demo_data/ram_insertion_20_demos_2025-03-05_10-59-57.pkl \
+    --demo_path=/home/vkowalskimartins/hil-serl/examples/experiments/ram_insertion/demo_data/ram_insertion_20_demos_2025-02-24_19-06-35.pkl \
     --learner \

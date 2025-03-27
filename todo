@@ -1,3 +1,10 @@
+grasp lower to have connector more stable OK
+reduce randomness OK
+retrain: show more examples with connector half-in /
+ label as success only when it is in
+test tcp eda01 OK -> still not
+check training plots OK ?
+check cams: how to know connector pose rel to gripper OK ? possibly reprint                     
 
 do not use action
 try pcb grasp_pose traget_psoe

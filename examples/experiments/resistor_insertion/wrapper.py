@@ -3,22 +3,22 @@ import time
 from franka_env.utils.rotations import euler_2_quat
 import numpy as np
 import requests
-# from pynput import keyboard
-
+from pynput import keyboard
+import gymnasium as gym
 from franka_env.envs.franka_env import FrankaEnv
 
 
-class RAMEnv(FrankaEnv):
+class ResistorEnv(FrankaEnv):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.should_regrasp = False
+        self.should_regrasp = True
 
-        # def on_press(key):
-        #     if str(key) == "Key.f1":
-        #         self.should_regrasp = True
+        def on_press(key):
+            if str(key) == "Key.f1":
+                self.should_regrasp = True
 
-        # listener = keyboard.Listener(on_press=on_press)
-        # listener.start()
+        listener = keyboard.Listener(on_press=on_press)
+        listener.start()
 
     def go_to_reset(self, joint_reset=False):
         """
@@ -32,10 +32,10 @@ class RAMEnv(FrankaEnv):
         requests.post(self.url + "update_param", json=self.config.PRECISION_PARAM)
 
         # pull up
-        self._update_currpos()
-        reset_pose = copy.deepcopy(self.currpos)
-        reset_pose[2] = self.resetpos[2] + 0.04
-        self.interpolate_move(reset_pose, timeout=1)
+        # self._update_currpos()
+        # reset_pose = copy.deepcopy(self.currpos)
+        # reset_pose[2] = self.resetpos[2] + 0.04
+        # self.interpolate_move(reset_pose, timeout=1)
 
         # perform joint reset if needed
         if joint_reset:
@@ -91,6 +91,7 @@ class RAMEnv(FrankaEnv):
         self.interpolate_move(top_pose, timeout=1)
         time.sleep(0.5)
 
+        input("Grasp?")
         grasp_pose = top_pose.copy()
         grasp_pose[2] -= 0.05
         self.interpolate_move(grasp_pose, timeout=0.5)
@@ -126,3 +127,31 @@ class RAMEnv(FrankaEnv):
         requests.post(self.url + "update_param", json=self.config.COMPLIANCE_PARAM)
         self.terminate = False
         return obs, {}
+
+class GripperPenaltyWrapper(gym.Wrapper):
+    def __init__(self, env, penalty=-0.05):
+        super().__init__(env)
+        assert env.action_space.shape == (7,)
+        self.penalty = penalty
+        self.last_gripper_pos = None
+
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self.last_gripper_pos = obs["state"][0, 0]
+        return obs, info
+
+    def step(self, action):
+        """Modifies the :attr:`env` :meth:`step` reward using :meth:`self.reward`."""
+        observation, reward, terminated, truncated, info = self.env.step(action)
+        if "intervene_action" in info:
+            action = info["intervene_action"]
+
+        if (action[-1] < -0.5 and self.last_gripper_pos > 0.9) or (
+            action[-1] > 0.5 and self.last_gripper_pos < 0.9
+        ):
+            info["grasp_penalty"] = self.penalty
+        else:
+            info["grasp_penalty"] = 0.0
+
+        self.last_gripper_pos = observation["state"][0, 0]
+        return observation, reward, terminated, truncated, info
