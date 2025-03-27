@@ -3,7 +3,7 @@ import time
 from franka_env.utils.rotations import euler_2_quat
 import numpy as np
 import requests
-from pynput import keyboard
+# from pynput import keyboard
 
 from franka_env.envs.franka_env import FrankaEnv
 
@@ -13,12 +13,12 @@ class RAMEnv(FrankaEnv):
         super().__init__(**kwargs)
         self.should_regrasp = False
 
-        def on_press(key):
-            if str(key) == "Key.f1":
-                self.should_regrasp = True
+        # def on_press(key):
+        #     if str(key) == "Key.f1":
+        #         self.should_regrasp = True
 
-        listener = keyboard.Listener(on_press=on_press)
-        listener.start()
+        # listener = keyboard.Listener(on_press=on_press)
+        # listener.start()
 
     def go_to_reset(self, joint_reset=False):
         """

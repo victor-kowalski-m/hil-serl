@@ -21,7 +21,7 @@ from experiments.ram_insertion.wrapper import RAMEnv
 
 class EnvConfig(DefaultEnvConfig):
     # SERVER_URL = "http://127.0.0.1:5000/"
-    SERVER_URL = "http://0.0.0.0:5000/"
+    SERVER_URL = "http://ictpc011:5000/"
     REALSENSE_CAMERAS = {
         "wrist_1": {
             "serial_number": "241122072130",

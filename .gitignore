@@ -1,4 +1,7 @@
 *.pkl
+first_run/
+classifier_ckpt/
+reqs.txt
 
 wandb/
 examples/**/classifier_data/
