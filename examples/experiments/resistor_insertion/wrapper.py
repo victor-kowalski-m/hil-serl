@@ -91,7 +91,7 @@ class ResistorEnv(FrankaEnv):
         self.interpolate_move(top_pose, timeout=1)
         time.sleep(0.5)
 
-        input("Grasp?")
+        # input("Grasp?")
         grasp_pose = top_pose.copy()
         grasp_pose[2] -= 0.05
         self.interpolate_move(grasp_pose, timeout=0.5)

@@ -121,8 +121,8 @@ class TrainConfig(DefaultTrainingConfig):
             open_threads=open_threads
         )
         env = GripperCloseEnv(env)
-        # if not fake_env:
-        #     env = SpacemouseIntervention(env)
+        if not fake_env:
+            env = SpacemouseIntervention(env)
         env = RelativeFrame(env)
         env = Quat2EulerWrapper(env)
         env = SERLObsWrapper(env, proprio_keys=self.proprio_keys)

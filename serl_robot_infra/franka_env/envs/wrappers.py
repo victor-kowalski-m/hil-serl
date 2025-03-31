@@ -75,18 +75,17 @@ class MultiStageBinaryRewardClassifierWrapper(gym.Wrapper):
         self.received = [False] * len(reward_classifier_func)
 
     def compute_reward(self, obs):
-        rewards = [0] * len(self.reward_classifier_func)
         for i, classifier_func in enumerate(self.reward_classifier_func):
             if self.received[i]:
                 continue
 
-            logit = classifier_func(obs).item()
-            if sigmoid(logit) >= 0.75:
+            predict = sigmoid(classifier_func(obs).item())
+            print(f"Class {i} predict: ", predict)
+            if predict >= 0.95:
                 self.received[i] = True
-                rewards[i] = 1
+                return 1 if i == len(self.reward_classifier_func) - 1 else 0.5
 
-        reward = sum(rewards)
-        return reward
+        return 0
 
     def step(self, action):
         obs, rew, done, truncated, info = self.env.step(action)

@@ -212,7 +212,7 @@ class FrankaEnv(gym.Env):
         self.init_realsense_cameras(self.config.REALSENSE_CAMERAS)
         self.init_generic_cameras(self.config.GENERIC_CAMERAS)
         self.start_listener()
-        self.display_image = False
+        # self.display_image = False
         if self.display_image:
             self.img_queue = queue.Queue()
             self.displayer = ImageDisplayer(self.img_queue, datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))

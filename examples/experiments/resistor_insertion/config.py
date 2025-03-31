@@ -7,6 +7,7 @@ from franka_env.envs.wrappers import (
     Quat2EulerWrapper,
     SpacemouseIntervention,
     MultiCameraBinaryRewardClassifierWrapper,
+    MultiStageBinaryRewardClassifierWrapper
 )
 from franka_env.envs.relative_env import RelativeFrame
 from franka_env.envs.franka_env import DefaultEnvConfig
@@ -128,23 +129,29 @@ class TrainConfig(DefaultTrainingConfig):
         env = SERLObsWrapper(env, proprio_keys=self.proprio_keys)
         env = ChunkingWrapper(env, obs_horizon=1, act_exec_horizon=None)
         if classifier:
-            classifier = load_classifier_func(
-                key=jax.random.PRNGKey(0),
-                sample=env.observation_space.sample(),
-                image_keys=self.classifier_keys,
-                checkpoint_path=os.path.abspath("classifier_ckpt/"),
-            )
+            classifiers = []
+            classifiers_dir = "/home/vkowalskimartins/hil-serl/examples/experiments/resistor_insertion/classifiers/"
+            for i, checkpoint_dir in enumerate(os.listdir(os.path.abspath("examples/experiments/resistor_insertion/classifiers/"))):
+                classifier = load_classifier_func(
+                    key=jax.random.PRNGKey(0),
+                    sample=env.observation_space.sample(),
+                    image_keys=self.classifier_keys,
+                    checkpoint_path=os.path.join(classifiers_dir, checkpoint_dir),
+                )
 
-            def reward_func(obs):
-                sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
-                prediction = sigmoid(classifier(obs))
-                print("Predict: ", prediction)
-                # added check for z position to further robustify classifier, but should work without as well
-                success = int((prediction > 0.95).item())
-                # if success:
-                #     input("Success")
-                return success
+                # def reward_func(obs):
+                #     sigmoid = lambda x: 1 / (1 + jnp.exp(-x))
+                #     prediction = sigmoid(classifier(obs))
+                #     print("Class {i} predict: ", prediction)
+                #     # added check for z position to further robustify classifier, but should work without as well
+                #     success = int((prediction > 0.95).item())
+                #     # if success:
+                #     #     input("Success")
+                #     return success
 
-            env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
+                classifiers.append(classifier)
+
+            # env = MultiCameraBinaryRewardClassifierWrapper(env, reward_func)
+            env = MultiStageBinaryRewardClassifierWrapper(env, classifiers)
         env = GripperPenaltyWrapper(env, penalty=-0.02)
         return env
