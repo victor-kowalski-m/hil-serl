@@ -332,10 +332,10 @@ class FrankaEnv(gym.Env):
                 )
                 images[key] = resized[..., ::-1]
                 display_images[key] = resized
-                display_images[key + "_full"] = cropped_rgb
-                full_res_images[key] = copy.deepcopy(
-                    cropped_rgb
-                )  # Store the full resolution cropped image
+                # display_images[key + "_full"] = cropped_rgb
+                # full_res_images[key] = copy.deepcopy(
+                #     cropped_rgb
+                # )  # Store the full resolution cropped image
             except queue.Empty:
                 input(
                     f"{key} camera frozen. Check connect, then press enter to relaunch..."
@@ -346,8 +346,8 @@ class FrankaEnv(gym.Env):
                 return self.get_im()
 
         # Store full resolution cropped images separately
-        if self.save_video:
-            self.recording_frames.append(full_res_images)
+        # if self.save_video:
+        #     self.recording_frames.append(full_res_images)
 
         if self.display_image:
             self.img_queue.put(display_images)
