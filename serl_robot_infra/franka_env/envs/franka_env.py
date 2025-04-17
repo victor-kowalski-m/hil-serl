@@ -212,7 +212,7 @@ class FrankaEnv(gym.Env):
         self.init_realsense_cameras(self.config.REALSENSE_CAMERAS)
         self.init_generic_cameras(self.config.GENERIC_CAMERAS)
         self.start_listener()
-        self.display_image = False
+        # self.display_image = False
         if self.display_image:
             self.img_queue = queue.Queue()
             self.displayer = ImageDisplayer(self.img_queue, datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
@@ -332,10 +332,10 @@ class FrankaEnv(gym.Env):
                 )
                 images[key] = resized[..., ::-1]
                 display_images[key] = resized
-                display_images[key + "_full"] = cropped_rgb
-                full_res_images[key] = copy.deepcopy(
-                    cropped_rgb
-                )  # Store the full resolution cropped image
+                # display_images[key + "_full"] = cropped_rgb
+                # full_res_images[key] = copy.deepcopy(
+                #     cropped_rgb
+                # )  # Store the full resolution cropped image
             except queue.Empty:
                 input(
                     f"{key} camera frozen. Check connect, then press enter to relaunch..."
